@@ -17,7 +17,7 @@ LITPARSER = None
 # 1. DOI prefix (case insensitive)
 # 2. may be followed by a colon or space (or not)
 # 3. followed by anything else until we reach a space, tab, or semicolon
-DOI_RE = re.compile('([dD][oO][iI][ :]?[^ \t;]+)')
+DOI_RE = re.compile('[dD][oO][iI][ :]*([^ \t;]+)')
 
 # PubMed IDs in the database range from 3-8 digits and have no prefix.
 # 99.96% of PubMed IDs have 6-8 digits, so we will focus on those and not
@@ -108,9 +108,16 @@ class PdfParser:
 		if self.fullText:
 			match = DOI_RE.search(self.fullText)
 			if match:
+				doiID = match.group(1)
+
+				# strip off any ".org" prefix, present for
+				# some IDs (e.g. J:241276)
+				if doiID.startswith('doi:'):
+					doiID = doiID[4:]
+
 				# DOI IDs can break across lines, so we need to
 				# strip out any line breaks.  (e.g. J:199000)
-				return match.group(1).replace('\n', '')
+				return doiID.replace('\n', '')
 		return None
 
 	def getFirstPubMedID (self):
@@ -124,9 +131,24 @@ class PdfParser:
 
 		self._loadFullText()
 		if self.fullText:
+			doiID = self.getFirstDoiID()
+
+			# need to look for the first (estimated) PubMed ID
+			# that is not part of the DOI ID, as those often
+			# contain strings of digits
+
 			match = PUBMED_RE.search(self.fullText)
-			if match:
-				return match.group(1)
+			while match:
+				pubmedID = match.group(1)
+				# if not part of the DOI ID, hope it's a
+				# PubMed ID and return it
+				if (doiID == None) or (doiID.find(pubmedID) < 0):
+					return pubmedID
+
+				# otherwise, look for the next potential
+				# PubMed ID
+				match = PUBMED_RE.search(self.fullText,
+					match.regs[0][1])
 		return None
 
 	def getText (self):
