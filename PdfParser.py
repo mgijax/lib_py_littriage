@@ -22,7 +22,7 @@ DOI_RE = re.compile('([dD][oO][iI][ :]?[^ \t;]+)')
 # PubMed IDs in the database range from 3-8 digits and have no prefix.
 # 99.96% of PubMed IDs have 6-8 digits, so we will focus on those and not
 # look for those of 3-5 digits to help avoid false matches.
-PUBMED_RE = re.compile('([0-9]{6:8})')
+PUBMED_RE = re.compile('([0-9]{6,8})')
 
 ###--- Functions ---###
 
