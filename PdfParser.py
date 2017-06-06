@@ -19,11 +19,6 @@ LITPARSER = None
 # 3. followed by anything else until we reach a space, tab, or semicolon
 DOI_RE = re.compile('[dD][oO][iI][ :]*([^ \t;]+)')
 
-# PubMed IDs in the database range from 3-8 digits and have no prefix.
-# 99.96% of PubMed IDs have 6-8 digits, so we will focus on those and not
-# look for those of 3-5 digits to help avoid false matches.
-PUBMED_RE = re.compile('([0-9]{6,8})')
-
 ###--- Functions ---###
 
 def setLitParserDir (
@@ -112,51 +107,25 @@ class PdfParser:
 
 				# strip off any ".org" prefix, present for
 				# some IDs (e.g. J:241276)
-				if doiID.startswith('doi:'):
-					doiID = doiID[4:]
+				if doiID.startswith('.org:') or \
+					doiID.startswith('.org/'):
+					doiID = doiID[5:]
 
 				# DOI IDs can break across lines, so we need to
 				# strip out any line breaks.  (e.g. J:199000)
-				return doiID.replace('\n', '')
-		return None
+#				return doiID.replace('\n', '')
+				nl = doiID.find('\n')
+				if nl >= 0:
+					doiID = doiID[:nl]
 
-	def getFirstPubMedID (self):
-		# Purpose: return the first PubMed ID from the PDF file
-		# Returns: string PubMed ID or None (if no ID can be found)
-		# Throws: Exception if this library has not been properly
-		#	initialized or if there are errors in parsing the file
-		# Notes: PubMed IDs are just strings of digits, so this method
-		#	has a high likelihood of returning bogus data (as the
-		#	string of 6-8 consecutive digits will be returned).
-
-		self._loadFullText()
-		if self.fullText:
-			doiID = self.getFirstDoiID()
-
-			# need to look for the first (estimated) PubMed ID
-			# that is not part of the DOI ID, as those often
-			# contain strings of digits
-
-			match = PUBMED_RE.search(self.fullText)
-			while match:
-				pubmedID = match.group(1)
-				# if not part of the DOI ID, hope it's a
-				# PubMed ID and return it
-				if (doiID == None) or (doiID.find(pubmedID) < 0):
-					return pubmedID
-
-				# otherwise, look for the next potential
-				# PubMed ID
-				match = PUBMED_RE.search(self.fullText,
-					match.regs[0][1])
+				if doiID.endswith('.'):
+					doiID = doiID[:-1]
+				return doiID
 		return None
 
 	def getText (self):
 		# Purpose: return the full text extracted from the PDF file
 		# Returns: string (full text)
-		# Notes: PubMed IDs are just strings of digits, so this method
-		#	has a high likelihood of returning bogus data (as the
-		#	first string of 6-8 digits will be returned).
 
 		self._loadFullText()
 		if self.fullText:
