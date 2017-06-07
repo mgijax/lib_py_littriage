@@ -120,13 +120,22 @@ class PdfParser:
 				if nl >= 0:
 					doiID = doiID[:nl]
 
-				# strip off trailing parentheses and periods
+				# strip off trailing parentheses, periods, and
+				# brackets
+
 				if doiID.endswith(')'):
 					doiID = doiID[:-1]
 
 				if doiID.endswith('.'):
 					doiID = doiID[:-1]
 
+				if doiID.endswith(']'):
+					doiID = doiID[:-1]
+
+				# trim URL fragment from beginning
+
+				if doiID.startswith('http://dx.doi.org/'):
+					doiID = doiID.replace('http://dx.doi.org/', '')
 				return doiID
 		return None
 
