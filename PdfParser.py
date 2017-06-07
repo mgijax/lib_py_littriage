@@ -27,14 +27,14 @@ def setLitParserDir (
 	# Purpose: initialize this module by identifying where to find the
 	#	litparser product.
 	# Throws: Exception if 'directory' does not exist or if it does not
-	#	contain the expected pdf2text.sh script.
+	#	contain the expected pdfGetFullText.sh script.
 
 	global LITPARSER
 
 	if not os.path.isdir(directory):
 		raise Exception('%s is not a directory' % directory)
 
-	LITPARSER = os.path.join(directory, 'pdf2text.sh')
+	LITPARSER = os.path.join(directory, 'pdfGetFullText.sh')
 	if not os.path.exists(LITPARSER):
 		raise Exception('%s does not exist' % LITPARSER)
 	return
