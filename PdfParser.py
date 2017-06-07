@@ -111,15 +111,22 @@ class PdfParser:
 					doiID.startswith('.org/'):
 					doiID = doiID[5:]
 
-				# DOI IDs can break across lines, so we need to
-				# strip out any line breaks.  (e.g. J:199000)
-#				return doiID.replace('\n', '')
+				# strip off a leading slash
+				if doiID.startswith('/'):
+					doiID = doiID[1:]
+
+				# strip off from trailing newline onward
 				nl = doiID.find('\n')
 				if nl >= 0:
 					doiID = doiID[:nl]
 
+				# strip off trailing parentheses and periods
+				if doiID.endswith(')'):
+					doiID = doiID[:-1]
+
 				if doiID.endswith('.'):
 					doiID = doiID[:-1]
+
 				return doiID
 		return None
 
