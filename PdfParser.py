@@ -17,7 +17,8 @@ LITPARSER = None
 # 1. DOI prefix (case insensitive)
 # 2. may be followed by a colon or space (or not)
 # 3. followed by anything else until we reach a space, tab, or semicolon
-DOI_RE = re.compile('[dD][oO][iI][ :]*([^ \t;]+)')
+#DOI_RE = re.compile('[dD][oO][iI][ :]*([^ \t;]+)')
+DOI_RE = re.compile('(10\.[0-9\.]+/[^ \t;]+)')
 
 ###--- Functions ---###
 
@@ -115,9 +116,16 @@ class PdfParser:
 				if doiID.startswith('/'):
 					doiID = doiID[1:]
 
-				# strip off from trailing newline onward
+				# if a newline occurs before the slash, then
+				# we can just remove it.  if afterward, remove
+				# everything after it.
+
+				slash = doiID.find('/')
 				nl = doiID.find('\n')
-				if nl >= 0:
+
+				if (nl >= 0) and (nl < slash):
+					doiID = doiID.replace('\n', '')
+				elif (nl >= 0) and (nl > slash):
 					doiID = doiID[:nl]
 
 				# strip off trailing parentheses, periods, and
@@ -136,6 +144,10 @@ class PdfParser:
 
 				if doiID.startswith('http://dx.doi.org/'):
 					doiID = doiID.replace('http://dx.doi.org/', '')
+				# eLife IDs often errantly end with .001
+				if (doiID.find('/eLife') > 0) and (doiID.endswith('.001')):
+					doiID = doiID[:-4]
+
 				return doiID
 		return None
 
