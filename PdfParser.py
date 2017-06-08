@@ -17,7 +17,6 @@ LITPARSER = None
 # 1. DOI prefix (case insensitive)
 # 2. may be followed by a colon or space (or not)
 # 3. followed by anything else until we reach a space, tab, or semicolon
-#DOI_RE = re.compile('[dD][oO][iI][ :]*([^ \t;]+)')
 DOI_RE = re.compile('(10\.[0-9\.]+/[^ \t;]+)')
 
 ###--- Functions ---###
@@ -117,13 +116,16 @@ class PdfParser:
 					doiID = doiID[1:]
 
 				# if a newline occurs before the slash, then
-				# we can just remove it.  if afterward, remove
-				# everything after it.
+				# we can just remove it.  Or if it immediately
+				# after the slash, remove it.  If afterward,
+				# remove everything after it.
 
 				slash = doiID.find('/')
 				nl = doiID.find('\n')
 
 				if (nl >= 0) and (nl < slash):
+					doiID = doiID.replace('\n', '')
+				elif (nl >= 0) and (nl == (slash+1)):
 					doiID = doiID.replace('\n', '')
 				elif (nl >= 0) and (nl > slash):
 					doiID = doiID[:nl]
