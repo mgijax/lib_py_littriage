@@ -18,6 +18,7 @@ LITPARSER = None
 # 2. may be followed by a colon or space (or not)
 # 3. followed by anything else until we reach a space, tab, or semicolon
 DOI_RE = re.compile('(10\.[0-9\.]+/[^ \t;]+)')
+BLOOD_DOI_RE = re.compile('10\.1182/blood([0-9\-]+)')
 
 ###--- Functions ---###
 
@@ -39,6 +40,19 @@ def setLitParserDir (
 		raise Exception('%s does not exist' % LITPARSER)
 	return
 	
+def hyphenate (s):
+	# Purpose: fix the hyphenation in Blood DOI IDs, which should be
+	#	of the format "-yyyy-mm-others" where the first six digits
+	#	are the year, the next two are the month, and then all the
+	#	others come at the end
+	# Returns: string updated according to 'Purpose', or the input string
+	#	if there are not enough digits
+
+	digits = s.replace('-', '')
+	if len(digits) < 7:
+		return s
+	return '-%s-%s-%s' % (digits[:4], digits[4:6], digits[6:])
+
 ###--- Classes ---###
 
 class PdfParser:
@@ -105,50 +119,47 @@ class PdfParser:
 			if match:
 				doiID = match.group(1)
 
-				# strip off any ".org" prefix, present for
-				# some IDs (e.g. J:241276)
-				if doiID.startswith('.org:') or \
-					doiID.startswith('.org/'):
-					doiID = doiID[5:]
-
-				# strip off a leading slash
-				if doiID.startswith('/'):
-					doiID = doiID[1:]
-
-				# if a newline occurs before the slash, then
-				# we can just remove it.  Or if it immediately
-				# after the slash, remove it.  If afterward,
-				# remove everything after it.
-
 				slash = doiID.find('/')
 				nl = doiID.find('\n')
 
-				if (nl >= 0) and (nl < slash):
-					doiID = doiID.replace('\n', '')
-				elif (nl >= 0) and (nl == (slash+1)):
-					doiID = doiID.replace('\n', '')
-				elif (nl >= 0) and (nl > slash):
+				# special case for PLoS journals, which often
+				# have a line break in the ID
+
+				if doiID.startswith('10.1371/') and \
+					(0 < nl < 17):
+					doiID = doiID.replace('\n', '', 1)
+					nl = doiID.find('\n')
+
+				# if there is a newline right after the slash,
+				# just remove it
+
+				if (nl >= 0) and (nl == (slash+1)):
+					doiID = doiID.replace('\n', '', 1)
+					nl = doiID.find('\n')
+
+				# if there is a newline later in the string,
+				# trim the ID at that point
+
+				if (nl >= 0) and (nl > slash):
 					doiID = doiID[:nl]
 
-				# strip off trailing parentheses, periods, and
-				# brackets
+				# strip off trailing parentheses, periods, 
+				# brackets, and whitespace
 
-				if doiID.endswith(')'):
-					doiID = doiID[:-1]
+				doiID = re.sub('[\)\.\]\s]+$', '', doiID)
 
-				if doiID.endswith('.'):
-					doiID = doiID[:-1]
-
-				if doiID.endswith(']'):
-					doiID = doiID[:-1]
-
-				# trim URL fragment from beginning
-
-				if doiID.startswith('http://dx.doi.org/'):
-					doiID = doiID.replace('http://dx.doi.org/', '')
 				# eLife IDs often errantly end with .001
 				if (doiID.find('/eLife') > 0) and (doiID.endswith('.001')):
 					doiID = doiID[:-4]
+
+				# if this is a Blood DOI ID, the hypenation 
+				# sometimes needs tweaking
+
+				match = BLOOD_DOI_RE.match(doiID)
+				if match:
+					numbers = match.group(1)
+					revised = hyphenate(numbers)
+					doiID = doiID.replace(numbers, revised)
 
 				return doiID
 		return None
