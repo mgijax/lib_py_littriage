@@ -7,7 +7,11 @@
 # 2. instantiate a PubMedAgent, PubMedAgentJson, or PubMedAgentMedline
 #	(depending on your desired return type)
 # 3. start passing DOI IDs (singly or in a list) to the agent and getting
-#	back data in your desired format
+#	back data in your desired format using getReference(doiID) or getReferences(doiList)
+
+import string
+import urllib
+import csv
 
 ###--- Globals ---###
 
@@ -18,100 +22,110 @@ TOOL_NAME = 'PubMedAgent'
 EMAIL_ADDRESS = 'mgi-help@jax.org'
 
 # return Medline or Json format from PubMed request? (internal use)
+# return type
 MEDLINE = 'medline'
 JSON = 'json'
 
+# return mode
+TEXT='text'
+
 # URL for sending DOI IDs to PubMed to be converted to PubMed IDs;
 # need to fill in tool name, email address, and comma-delimited list of DOI IDs
-ID_CONVERTER_URL = '''https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?tool=%s&email=%s&ids=%s'''
+ID_CONVERTER_URL = '''https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?tool=%s&email=%s&format=csv&ids=%s'''
 
 # URL for sending PubMed IDs to PubMed to get reference data for them;
 # need to fill in comma-delimited list of PubMed IDs, requested return mode,
 # tool name, and email address
-REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=%s&retmode=%s&tool=%s&email=%s'''
+#REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=%s&retmode=%s&tool=%s&email=%s'''
+REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=%s&retmode=%s&rettype=%s'''
 
 ###--- Functions ---###
 
 def setToolName(tool):
-	# change the tool name submitted to NCBI (for their tracking purposes)
-	global TOOL_NAME
+    # Purpose: change the tool name submitted to NCBI (for their tracking purposes)
 
-	TOOL_NAME = tool
-	return
+    global TOOL_NAME
+
+    TOOL_NAME = tool
+    return
 
 def setEmailAddress(email):
-	# change email address submitted to NCBI (for their tracking purposes)
-	global EMAIL_ADDRESS
+    # Purpose: change email address submitted to NCBI (for their tracking purposes)
+    global EMAIL_ADDRESS
 
-	EMAIL_ADDRESS = email
-	return
+    EMAIL_ADDRESS = email
+    return
 
 ###--- Classes ---###
 
 class PubMedReference:
-	# Is: a Python representation of data for a single reference from 
-	#	PubMed
-	# Does: provides easy access within Python to reference attributes
-	# Notes: if an errorMessage is provided rather than a jsonString, this
-	#	PubMedReference will be flagged as isValid() == False, and the
-	#	error message is then accessible from getErrorMessage().
+    # Is: a Python representation of data for a single reference from 
+    #	PubMed
+    # Does: provides easy access within Python to reference attributes
+    # Notes: if an errorMessage is provided rather than a reference record,
+    #  this PubMedReference will be flagged as isValid() == False, and the
+    #	error message is then accessible from getErrorMessage().
 
-	def __init__ (self, jsonString = None, errorMessage = None):
-		self.pubMedID = None
-		self.title = None
-		self.authors = None
-		self.journal = None
-		self.date = None
-		self.year = None
-		self.issue = None
-		self.pages = None
-		self.abstract = None
+    def __init__ (self, errorMessage = None):
+	self.pubMedID = None	
+	self.title = None
+	self.authors = None
+	self.journal = None
+	self.date = None
+	self.year = None
+	self.issue = None
+	self.pages = None
+	self.abstract = None
+	# add other fields as needed
 
-		# add other fields as needed
+	self.errorMessage = errorMessage
 
-		self.errorMessage = errorMessage
+	return
 
-		if jsonString:
-			# initialize this object from JSON data
-			pass
-		return
+    ###--- setter/getter methods ---###
 
-	###--- accessor methods ---###
+    def isValid(self):
+	return self.errorMessage == None
 
-	def isValid(self):
-		return self.errorMessage == None
-
-	def getErrorMessage(self):
-		return self.errorMessage
-
-	def getPubMedID(self):
-		return self.pubMedID
-
-	def getTitle(self):
-		return self.title
-
-	def getAuthors(self):
-		return self.authors
-
-	def getJournal(self):
-		return self.journal
-
-	def getDate(self):
-		return self.date
-
-	def getYear(self):
-		return self.year
-
-	def getIssue(self):
-		return self.issue
-
-	def getPages(self):
-		return self.pages
-
-	def getAbstract(self):
-		return self.abstract
-
-	# add other accessors as needed
+    def getErrorMessage(self):
+	return self.errorMessage
+    def setPubMedID(self, pmID):
+	self.pubMedID = pmID
+    def getPubMedID(self):
+	return self.pubMedID
+    def setTitle(self, title):
+	self.title = title
+    def getTitle(self):
+	return self.title
+    def setAuthors(self, authors):
+	self.authors = authors
+    def getAuthors(self):
+	return self.authors
+    def setJournal(self, journal):
+	self.journal = journal
+    def getJournal(self):
+	return self.journal
+    def setDate(self, date):
+	self.date = date
+    def getDate(self):
+	return self.date
+    def setYear(self, year):
+	self.year = year
+    def getYear(self):
+	return self.year
+    def setIssue(self, issue):
+	self.issue = issue
+    def getIssue(self):
+	return self.issue
+    def setPages(self, pages):
+	self.pages = pages
+    def getPages(self):
+	return self.pages
+    def setAbstract(self, abstract):
+	self.abstract = abstract
+    def getAbstract(self):
+	return self.abstract
+    # add other accessors as needed
 
 class PubMedAgent:
 	# Is: an agent that interacts with PubMed to get reference data
@@ -120,77 +134,199 @@ class PubMedAgent:
 	#	objects for them
 
 	def __init__ (self):
-		return
+	    # Purpose: constructor
+	    return
 
 	def getPubMedID (self, doiID):
-		# return the PubMed ID corresponding to this doiID, or None
-		# if there is no corresponding PubMed ID
+		# Purpose: return the PubMed ID corresponding to this doiID, or None
+		#     if there is no corresponding PubMed ID
+		# Throws: Exception if the URL returns an error
+		# Notes: 6/30 - not tested
 
 		return self.getPubMedIDs([doiID])[doiID]
 
 	def getPubMedIDs (self, doiList):
-		# return a dictionary mapping from each DOI ID to its
-		# corresponding PubMed ID.  If no PubMed ID for a given DOI ID,
-		# then that one maps to None.
+		# Purpose: return a dictionary mapping from each DOI ID to its
+		#     corresponding PubMed ID.  If no PubMed ID for a given DOI ID,
+		#     then that one maps to None.
+		# Throws: Exception if the URL returns an error
 
-		# add in code here (function call?) to query PubMed, then
-		# flesh out loop below
-
+		try:
+		    print 'Getting PubMed IDs with URL:'
+		    print ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, string.join(doiList, ','))
+		    response = urllib.urlopen(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, string.join(doiList, ',')))
+		except IOError, e:
+		    if hasattr(e, 'code'): # HTTPError
+			print 'HTTP error code: ', e.code
+			raise Exception('HTTP error code: %s' % e.code)
+		    elif hasattr(e, 'reason'): # URLError
+			print "Can't connect, reason: ", e.reason
+			raise Exception("Can't connect, reason: %s" % e.reason)
+		    else:
+			raise Exception('Unknown exception: %s' % e)
+		csvr = csv.reader(response)
 		mapping = {}
-		for doiID in doiList:
-			mapping[doiID] = None
+		print '\n Return from URL:'
+		for row in  csvr:
+		    pmID = row[0]
+		    if pmID == 'PMID':
+			continue
+		    doiID = row[2]
+		    print 'Add to mapping pmID: %s doiID: %s\n' % (pmID, doiID)
+		    if pmID == '':
+			pmID = None
+		    print row
+		    mapping[doiID] = pmID
 		return mapping
+
+	def getReferenceInfo(self, doiList):
+		# Purpose: stub to be implemented by child
+	    	return
 	
 	def getReference (self, doiID):
-		# returns a single PubMedReference object for the DOI ID
+		# Purpose: returns a single PubMedReference object for the DOI ID
+		# Notes: 6/30 - not tested
 		return self.getReferences([doiID])[doiID]
 
 	def getReferences (self, doiList):
-		# returns a dictionary that maps each DOI ID to its
-		#	corresponding PubMedReference object (or None, if there
-		#	is no reference data in PubMed for that DOI ID)
+	    # Purpose: returns a dictionary that maps each DOI ID to its
+	    #	corresponding PubMedReference object (or None, if there
+	    #	is no reference data in PubMed for that DOI ID)
+	    # Notes: PubMed call should pull its requested format
+            #   from a method that can be overridden in subclasses (or from
+            #   an instance variable) -- JSON vs MEDLINE
 
-		# add in code here (function call?) to query PubMed, then
-		# flesh out loop below
+	    # translate doiList to doiID/pubmedID dictionary
+	    # pubMedDict = {doiID:pubMedID, ...}
+	    pubMedDict = self.getPubMedIDs(doiList)
 
-		# note that PubMed call should pull its requested format
-		# from a method that can be overridden in subclasses (or from
-		# an instance variable) -- JSON vs MEDLINE
+	    # call getReferenceInfo - which is implemented by the subclass.
 
-		mapping = {}
-		for doiID in doiList:
-			# use function call to format the data for a given
-			# reference appropriately (object, JSON, Medline), then
-			# we can just override that function is subclasses
-			# below.
-
-			mapping[doiID] = None
-		return mapping
-
+	    mapping = {}
+	    for doiID in pubMedDict:
+		if pubMedDict[doiID] == None:
+		    mapping[doiID] = None
+		    continue
+		pubMedID = pubMedDict[doiID]
+		
+		print '\n\nGetting PubMed References for doiID: %s' % doiID
+		refObject = self.getReferenceInfo(pubMedID)
+		mapping[doiID] = refObject
+	    return mapping
+    
 class PubMedAgentJson (PubMedAgent):
 	# Is: an agent that interacts with PubMed to get reference data
 	#	for DOI IDs
 	# Does: takes DOI IDs, queries PubMed, and returns a JSON string
 	#	for each reference
-
+	# Note: Not implemented
 	def __init__ (self):
-		return
+	    # Purpose: constructor
+	    return
 
 	# override method used to format each reference, reporting JSON
 	# for this class
 
 class PubMedAgentMedline (PubMedAgent):
-	# Is: an agent that interacts with PubMed to get reference data
-	#	for DOI IDs
-	# Does: takes DOI IDs, queries PubMed, and returns a Medline-formatted
-	#	string for each reference
+    # Is: an agent that interacts with PubMed to get reference data
+    #	for DOI IDs
+    # Does: takes DOI IDs, queries PubMed, and returns a Medline-formatted
+    #	string for each reference
 
-	def __init__ (self):
-		return
+    def __init__ (self):
+	return
 
-	# override method used to format each reference, reporting Medline
-	# format for this class
+    # override method used to format each reference, reporting Medline
+    # format for the PubMed request
 
-	# also need to adjust the requested format (JSON vs. MEDLINE) for
-	# the PubMed request
+    def getReferenceInfo(self, pubMedID):
+	# Purpose: Implementation of the superclass stub. Given a pubMedID, get a
+	#   MedLine record, parse, create and return a PubMedReference object
+	# Throws: Exception if the URL returns an error
+	# Init the reference we will return
+	pubMedRef = None
+	try:
+	    print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
+	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
+	    medLineRecord = string.strip(response.read())
+	    print '"%s"' % medLineRecord
+	except IOError, e:
+	    if hasattr(e, 'code'): # HTTPError
+		print 'http error code: ', e.code
+		raise Exception('HTTP error code: %s' % e.code)
+	    elif hasattr(e, 'reason'): # URLError
+		print "Can't connect, reason: ", e.reason
+		raise Exception("Can't connect, reason: %s" % e.reason)
+	    else:
+		raise Exception('Unknown exception: %s' % e)
 
+	# if this pubMedID returns an error, create reference object with
+	# that error message, otherwise parse the record
+	if string.find(medLineRecord, 'Error occurred:') !=  -1:
+	    pubMedRef = PubMedReference(errorMessage = medLineRecord)
+	else: 
+
+	    pubMedRef = PubMedReference()
+	    tokens = string.split(medLineRecord, '\n')
+
+	    # Abstract, multilined w/o additional tag
+	    isAB = 0
+	    abList = []
+
+	    # author, multilined each with tag
+	    auList = []
+
+	    # title, multilined w/o additional tag
+	    isTI = 0
+	    tiList = []
+
+	    for line in tokens:
+		# handle multilined Abstract
+		if isAB == 1 and line.startswith('      '):
+		    # strip the leading spaces
+		    abList.append(string.strip(line))
+		else:
+		    isAB = 0
+		    # check for other continues lines we don't care about
+		    # e.g. AD
+		    if not line.startswith('      '):
+			value = (map(string.strip,string.split(line, '-')))[1]
+		    else:
+			continue
+		# handle multilined Title
+		if isTI == 1 and line.startswith('      '):
+		    # strip the leading spaces
+		    tiList.append(string.strip(line))
+		else:
+		    isTI = 0
+		    # check for other continues lines we don't care about
+		    # e.g. AD
+		    if not line.startswith('      '):
+			value = (map(string.strip,string.split(line, '-', 1)))[1]
+		    else:
+			continue
+		# parse MedLine format
+		if line.startswith('PMID'):
+		    pubMedRef.setPubMedID(value) 
+		elif line.startswith('TI'):
+		    isTI = 1
+		    tiList.append(value)
+		elif line.startswith('AU'):
+		    auList.append(value)
+		elif line.startswith('TA'):
+		    pubMedRef.setJournal(value)
+		elif line.startswith('DP'):
+		    pubMedRef.setDate(value)
+		elif line.startswith('YR'):
+		    pubMedRef.setYear(value)
+		elif line.startswith('IP'):
+		    pubMedRef.setIssue(value)
+		elif line.startswith('PG'):
+		    pubMedRef.setPages(value)
+		elif line.startswith('AB'):
+		    isAB = 1
+		    abList.append(value)
+	    pubMedRef.setAbstract(string.join(abList))
+	    pubMedRef.setAuthors(string.join(auList, ', '))
+	    pubMedRef.setTitle(string.join(tiList))
+	return pubMedRef
