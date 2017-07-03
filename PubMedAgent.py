@@ -157,6 +157,8 @@ class PubMedAgent:
 	    try:
 		print '### Getting PubMed IDs ###\n'
 		for doiID in doiList:
+		    doiID = doiID.replace('(', '*')
+		    doiID = doiID.replace(')', '*')
 		    print ID_CONVERTER_URL % (XML, doiID)
 		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, doiID))
 		    record = string.strip(response.read())
