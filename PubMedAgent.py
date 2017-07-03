@@ -12,6 +12,7 @@
 import string
 import urllib
 import csv
+import xml.dom.minidom 
 
 ###--- Globals ---###
 
@@ -25,13 +26,15 @@ EMAIL_ADDRESS = 'mgi-help@jax.org'
 # return type
 MEDLINE = 'medline'
 JSON = 'json'
+XML = 'xml'
 
 # return mode
 TEXT='text'
 
 # URL for sending DOI IDs to PubMed to be converted to PubMed IDs;
 # need to fill in tool name, email address, and comma-delimited list of DOI IDs
-ID_CONVERTER_URL = '''https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?tool=%s&email=%s&format=csv&ids=%s'''
+#ID_CONVERTER_URL = '''https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?tool=%s&email=%s&format=csv&ids=%s'''
+ID_CONVERTER_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=%s&term=%s'''
 
 # URL for sending PubMed IDs to PubMed to get reference data for them;
 # need to fill in comma-delimited list of PubMed IDs, requested return mode,
@@ -146,42 +149,41 @@ class PubMedAgent:
 		return self.getPubMedIDs([doiID])[doiID]
 
 	def getPubMedIDs (self, doiList):
-		# Purpose: return a dictionary mapping from each DOI ID to its
-		#     corresponding PubMed ID.  If no PubMed ID for a given DOI ID,
-		#     then that one maps to None.
-		# Throws: Exception if the URL returns an error
-
-		try:
-		    print 'Getting PubMed IDs with URL:'
-		    print ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, string.join(doiList, ','))
-		    response = urllib.urlopen(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, string.join(doiList, ',')))
-		except IOError, e:
-		    if hasattr(e, 'code'): # HTTPError
-			print 'HTTP error code: ', e.code
-			raise Exception('HTTP error code: %s' % e.code)
-		    elif hasattr(e, 'reason'): # URLError
-			print "Can't connect, reason: ", e.reason
-			raise Exception("Can't connect, reason: %s" % e.reason)
-		    else:
-			raise Exception('Unknown exception: %s' % e)
-		csvr = csv.reader(response)
-		mapping = {}
-		print '\n Return from URL:'
-		for row in  csvr:
-		    pmID = row[0]
-		    if pmID == 'PMID':
+	    # Purpose: return a dictionary mapping from each DOI ID to its
+	    #     corresponding PubMed ID.  If no PubMed ID for a given DOI ID,
+	    #     then that one maps to None.
+	    # Throws: Exception if the URL returns an error
+	    mapping = {}
+	    try:
+		print '### Getting PubMed IDs ###\n'
+		for doiID in doiList:
+		    print ID_CONVERTER_URL % (XML, doiID)
+		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, doiID))
+		    record = string.strip(response.read())
+		    print record
+		    xmldoc = xml.dom.minidom.parseString(record)
+		    pubmedIDs = xmldoc.getElementsByTagName("Id")
+		    if pubmedIDs == []:
+			mapping[doiID] = None
 			continue
-		    doiID = row[2]
-		    print 'Add to mapping pmID: %s doiID: %s\n' % (pmID, doiID)
-		    if pmID == '':
-			pmID = None
-		    print row
-		    mapping[doiID] = pmID
-		return mapping
+		    for pmID in pubmedIDs:
+			print 'pm: %s' % pmID.firstChild.data
+			mapping[doiID] = pmID.firstChild.data
+		    print '\n'
+	    except IOError, e:
+		if hasattr(e, 'code'): # HTTPError
+		    print 'HTTP error code: ', e.code
+		    raise Exception('HTTP error code: %s' % e.code)
+		elif hasattr(e, 'reason'): # URLError
+		    print "Can't connect, reason: ", e.reason
+		    raise Exception("Can't connect, reason: %s" % e.reason)
+		else:
+			raise Exception('Unknown exception: %s' % e)
+	    return mapping
 
 	def getReferenceInfo(self, doiList):
 		# Purpose: stub to be implemented by child
-	    	return
+		return
 	
 	def getReference (self, doiID):
 		# Purpose: returns a single PubMedReference object for the DOI ID
@@ -193,8 +195,8 @@ class PubMedAgent:
 	    #	corresponding PubMedReference object (or None, if there
 	    #	is no reference data in PubMed for that DOI ID)
 	    # Notes: PubMed call should pull its requested format
-            #   from a method that can be overridden in subclasses (or from
-            #   an instance variable) -- JSON vs MEDLINE
+	    #   from a method that can be overridden in subclasses (or from
+	    #   an instance variable) -- JSON vs MEDLINE
 
 	    # translate doiList to doiID/pubmedID dictionary
 	    # pubMedDict = {doiID:pubMedID, ...}
@@ -203,29 +205,30 @@ class PubMedAgent:
 	    # call getReferenceInfo - which is implemented by the subclass.
 
 	    mapping = {}
+	    print '### Getting PubMed References ###'
 	    for doiID in pubMedDict:
 		if pubMedDict[doiID] == None:
 		    mapping[doiID] = None
 		    continue
 		pubMedID = pubMedDict[doiID]
 		
-		print '\n\nGetting PubMed References for doiID: %s' % doiID
+		print '\n\ndoiID: %s' % doiID
 		refObject = self.getReferenceInfo(pubMedID)
 		mapping[doiID] = refObject
 	    return mapping
     
 class PubMedAgentJson (PubMedAgent):
-	# Is: an agent that interacts with PubMed to get reference data
-	#	for DOI IDs
-	# Does: takes DOI IDs, queries PubMed, and returns a JSON string
-	#	for each reference
-	# Note: Not implemented
-	def __init__ (self):
-	    # Purpose: constructor
-	    return
+    # Is: an agent that interacts with PubMed to get reference data
+    #	for DOI IDs
+    # Does: takes DOI IDs, queries PubMed, and returns a JSON string
+    #	for each reference
+    # Note: Not implemented
+    def __init__ (self):
+	# Purpose: constructor
+	return
 
-	# override method used to format each reference, reporting JSON
-	# for this class
+    # override method used to format each reference, reporting JSON
+    # for this class
 
 class PubMedAgentMedline (PubMedAgent):
     # Is: an agent that interacts with PubMed to get reference data
