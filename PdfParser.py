@@ -18,7 +18,15 @@ LITPARSER = None
 # 2. may be followed by a colon or space (or not)
 # 3. followed by anything else until we reach a space, tab, or semicolon
 DOI_RE = re.compile('(10\.[0-9\.]+/[^ \t;]+)')
+
+# regex specifically for recognizing IDs from Blood journal
 BLOOD_DOI_RE = re.compile('10\.1182/blood([0-9\-]+)')
+
+# regex specifically for recognizing IDs from Science journals
+SCIENCE_DOI_RE = re.compile('(10\.1126/[a-zA-Z0-9\-\.]+)')
+
+# regex for finding "accepted" string
+ACCEPTED_RE = re.compile('accepted', re.IGNORECASE)
 
 ###--- Functions ---###
 
@@ -161,8 +169,55 @@ class PdfParser:
 					revised = hyphenate(numbers)
 					doiID = doiID.replace(numbers, revised)
 
+				# if this is a Science DOI ID, we instead need
+				# to find and return the last DOI ID for the
+				# PDF file.
+
+				if doiID.startswith('10.1126/'):
+					return self._getScienceID()
+
 				return doiID
+
 		return None
+
+	def _getScienceID (self):
+		# Science journals include the end of the prior article at the
+		# start of the PDF file.  This means that we will usually
+		# return an inaccurate DOI ID for PDFs from Science journals.
+		# Instead, the desired ID occurs at the end of the article,
+		# shortly after the word "accepted".  Use these criteria to
+		# get the desired ID and return it.
+
+		# To get to this method, we must have already loaded the
+		# full text, and it must have been non-null.
+
+		# Find all occurrences of the word 'accepted' and note the
+		# position of each.  (It is possible that 'accepted' would
+		# occur in the start of the next article, so we can't just
+		# blindly take the last one.)
+
+		acceptedPositions = []
+		match = ACCEPTED_RE.search(self.fullText)
+		while match:
+			pos = match.regs[0][0]
+			acceptedPositions.append(pos)
+			match = ACCEPTED_RE.search(self.fullText, pos + 1)
+
+		# Now start at the last occurrence of "accepted" and see if
+		# we can find a Science DOI ID reasonably soon after it.  If
+		# so, that's our desired ID to return.  If not, work back
+		# through the other instances of "accepted".
+
+		# how close is close enough? (number of characters)
+		threshold = 80
+		acceptedPositions.reverse()
+
+		for accPos in acceptedPositions:
+			match = SCIENCE_DOI_RE.search(self.fullText, accPos)
+			if match:
+				if (match.regs[0][0] <= (accPos + threshold)):
+					return match.group(1)
+		return None 
 
 	def getText (self):
 		# Purpose: return the full text extracted from the PDF file
