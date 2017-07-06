@@ -40,6 +40,7 @@ if __name__ == '__main__':
     print 'MGI:'
     print getPdfpath('/data/littriage', 'MGI:')
     print ''
+
     print 'MGI:1'
     print getPdfpath('/data/littriage', 'MGI:1')
     print ''
