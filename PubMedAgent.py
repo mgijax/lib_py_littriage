@@ -157,12 +157,13 @@ class PubMedAgent:
 	    try:
 		#print '### Getting PubMed IDs ###\n'
 		for doiID in doiList:
-		    doiID = doiID.replace('(', '*')
-		    doiID = doiID.replace(')', '*')
-		    doiID = doiID.replace(';', '*')
-		    doiID = doiID.replace(':', '*')
+		    forUrl = doiID
+		    forUrl = doiID.replace('(', '*')
+		    forUrl = doiID.replace(')', '*')
+		    forUrl = doiID.replace(';', '*')
+		    forUrl = doiID.replace(':', '*')
 		    #print ID_CONVERTER_URL % (XML, doiID)
-		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, doiID))
+		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, forUrl))
 		    record = string.strip(response.read())
 		    #print record
 		    xmldoc = xml.dom.minidom.parseString(record)
@@ -195,6 +196,7 @@ class PubMedAgent:
             #   corresponding PubMedReference object(s) (or None, if there
             #   is no reference data in PubMed for that DOI ID)
 	    # DOI ID can map to multiple PubMed 
+	    # sc - this has not been tested
 		return self.getReferences([doiID])[doiID]
 
 	def getReferences (self, doiList):
