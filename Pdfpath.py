@@ -28,20 +28,44 @@ PROJECT_DIR_GROUPING = 1000
 #
 def getPdfpath(parentpath, mgiID):
 
-    prefix, numeric = mgiID.split(':')
-    basepath = (int(numeric) / PROJECT_DIR_GROUPING) * PROJECT_DIR_GROUPING
-    return str(parentpath) + '/' + str(basepath)
+    try:
+        prefix, numeric = mgiID.split(':')
+        basepath = (int(numeric) / PROJECT_DIR_GROUPING) * PROJECT_DIR_GROUPING
+        return str(parentpath) + '/' + str(basepath)
+    except:
+        raise Exception('Failed to obtain pdf path: %s, %s' % (parentpath, mgiID))
 
 if __name__ == '__main__':
 
-    print 'MGI:1095183'
-    print getPdfpath('/data/littriage', 'MGI:1095183')
+    #print 'MGI:'
+    #print getPdfpath('/data/littriage', 'MGI:')
+    #print ''
+
+    print 'MGI:1'
+    print getPdfpath('/data/littriage', 'MGI:1')
     print ''
 
-    print 'MGI:1195539'
-    print getPdfpath('/data/littriage', 'MGI:1195539')
+    print 'MGI:11'
+    print getPdfpath('/data/littriage', 'MGI:11')
     print ''
 
-    print 'MGI:3758969'
-    print getPdfpath('/data/littriage', 'MGI:3758969')
+    print 'MGI:111'
+    print getPdfpath('/data/littriage', 'MGI:111')
     print ''
+
+    print 'MGI:1111'
+    print getPdfpath('/data/littriage', 'MGI:1111')
+    print ''
+
+    print 'MGI:11111'
+    print getPdfpath('/data/littriage', 'MGI:11111')
+    print ''
+
+    print 'MGI:111111'
+    print getPdfpath('/data/littriage', 'MGI:111111')
+    print ''
+
+    print 'MGI:1111111'
+    print getPdfpath('/data/littriage', 'MGI:1111111')
+    print ''
+
