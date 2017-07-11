@@ -153,25 +153,28 @@ class PubMedAgent:
 	    #     corresponding PubMed ID.  If no PubMed ID for a given DOI ID,
 	    #     then that one maps to None.
 	    # Throws: Exception if the URL returns an error
-	    mapping = {}
+	    mapping = {}  # {doiid: [pubMedId(s)], ...}
 	    try:
-		print '### Getting PubMed IDs ###\n'
+		#print '### Getting PubMed IDs ###\n'
 		for doiID in doiList:
 		    doiID = doiID.replace('(', '*')
 		    doiID = doiID.replace(')', '*')
-		    print ID_CONVERTER_URL % (XML, doiID)
+		    doiID = doiID.replace(';', '*')
+		    doiID = doiID.replace(':', '*')
+		    #print ID_CONVERTER_URL % (XML, doiID)
 		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, doiID))
 		    record = string.strip(response.read())
-		    print record
+		    #print record
 		    xmldoc = xml.dom.minidom.parseString(record)
 		    pubmedIDs = xmldoc.getElementsByTagName("Id")
+		    if doiID not in mapping:
+			mapping[doiID] = []
 		    if pubmedIDs == []:
-			mapping[doiID] = None
-			continue
-		    for pmID in pubmedIDs:
-			print 'pm: %s' % pmID.firstChild.data
-			mapping[doiID] = pmID.firstChild.data
-		    print '\n'
+			mapping[doiID].append(None)
+		    else:
+			for pmID in pubmedIDs:
+			    #print 'pm: %s' % pmID.firstChild.data
+			    mapping[doiID].append(pmID.firstChild.data)
 	    except IOError, e:
 		if hasattr(e, 'code'): # HTTPError
 		    print 'HTTP error code: ', e.code
@@ -188,35 +191,39 @@ class PubMedAgent:
 		return
 	
 	def getReference (self, doiID):
-		# Purpose: returns a single PubMedReference object for the DOI ID
-		# Notes: 6/30 - not tested
+	    # Purpose: returns a dictionary that maps each DOI ID to its
+            #   corresponding PubMedReference object(s) (or None, if there
+            #   is no reference data in PubMed for that DOI ID)
+	    # DOI ID can map to multiple PubMed 
 		return self.getReferences([doiID])[doiID]
 
 	def getReferences (self, doiList):
 	    # Purpose: returns a dictionary that maps each DOI ID to its
-	    #	corresponding PubMedReference object (or None, if there
+	    #	corresponding PubMedReference object(s) (or None, if there
 	    #	is no reference data in PubMed for that DOI ID)
-	    # Notes: PubMed call should pull its requested format
-	    #   from a method that can be overridden in subclasses (or from
-	    #   an instance variable) -- JSON vs MEDLINE
+	    # Notes: DOI ID can map to multiple PubMed
 
 	    # translate doiList to doiID/pubmedID dictionary
 	    # pubMedDict = {doiID:pubMedID, ...}
+	    #print 'getReferences doiList: %s' % doiList
 	    pubMedDict = self.getPubMedIDs(doiList)
 
 	    # call getReferenceInfo - which is implemented by the subclass.
 
 	    mapping = {}
-	    print '### Getting PubMed References ###'
+	    #print '### Getting PubMed References ###'
 	    for doiID in pubMedDict:
-		if pubMedDict[doiID] == None:
-		    mapping[doiID] = None
-		    continue
-		pubMedID = pubMedDict[doiID]
-		
-		print '\n\ndoiID: %s' % doiID
-		refObject = self.getReferenceInfo(pubMedID)
-		mapping[doiID] = refObject
+		if doiID not in mapping:
+		    mapping[doiID] = []
+		pubMedIdList = pubMedDict[doiID]
+		refObject = None # default, for no pmID
+		#print 'pubMedIdList: %s' % pubMedIdList
+		for pubMedID in pubMedIdList:
+		    if pubMedID == None:
+			 mapping[doiID].append(refObject)
+		    else:
+			refObject = self.getReferenceInfo(pubMedID)
+		    mapping[doiID].append(refObject)
 	    return mapping
     
 class PubMedAgentJson (PubMedAgent):
@@ -251,10 +258,10 @@ class PubMedAgentMedline (PubMedAgent):
 	# Init the reference we will return
 	pubMedRef = None
 	try:
-	    print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
+	    #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
 	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
 	    medLineRecord = string.strip(response.read())
-	    print '"%s"' % medLineRecord
+	    #print '"%s"' % medLineRecord
 	except IOError, e:
 	    if hasattr(e, 'code'): # HTTPError
 		print 'http error code: ', e.code
@@ -286,6 +293,7 @@ class PubMedAgentMedline (PubMedAgent):
 	    tiList = []
 
 	    for line in tokens:
+		#print line
 		# handle multilined Abstract
 		if isAB == 1 and line.startswith('      '):
 		    # strip the leading spaces
