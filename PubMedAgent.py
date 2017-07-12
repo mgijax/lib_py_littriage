@@ -332,7 +332,7 @@ class PubMedAgentMedline (PubMedAgent):
 		elif line.startswith('DP'):
 		    pubMedRef.setDate(value)
 		    print 'setting date in reference from: %s' % value
-		    pubMedRef.setYear(string.split(value, ' ', 0))
+		    pubMedRef.setYear(string.split(value, ' ', 1)[0])
 		elif line.startswith('IP'):
 		    pubMedRef.setIssue(value)
 		elif line.startswith('PG'):
