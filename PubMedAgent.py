@@ -263,7 +263,7 @@ class PubMedAgentMedline (PubMedAgent):
 	    #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
 	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
 	    medLineRecord = string.strip(response.read())
-	    #print '"%s"' % medLineRecord
+	    print '"%s"' % medLineRecord
 	except IOError, e:
 	    if hasattr(e, 'code'): # HTTPError
 		print 'http error code: ', e.code
@@ -293,7 +293,6 @@ class PubMedAgentMedline (PubMedAgent):
 	    # title, multilined w/o additional tag
 	    isTI = 0
 	    tiList = []
-
 	    for line in tokens:
 		#print line
 		# handle multilined Abstract
@@ -332,8 +331,8 @@ class PubMedAgentMedline (PubMedAgent):
 		    pubMedRef.setJournal(value)
 		elif line.startswith('DP'):
 		    pubMedRef.setDate(value)
-		elif line.startswith('YR'):
-		    pubMedRef.setYear(value)
+		    print 'setting date in reference from: %s' % value
+		    pubMedRef.setYear(string.split(value, ' ', 0))
 		elif line.startswith('IP'):
 		    pubMedRef.setIssue(value)
 		elif line.startswith('PG'):
