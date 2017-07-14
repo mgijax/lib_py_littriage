@@ -162,7 +162,7 @@ class PubMedAgent:
 		    forUrl = doiID.replace(')', '*')
 		    forUrl = doiID.replace(';', '*')
 		    forUrl = doiID.replace(':', '*')
-		    #print ID_CONVERTER_URL % (XML, doiID)
+		    print ID_CONVERTER_URL % (XML, doiID)
 		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, forUrl))
 		    record = string.strip(response.read())
 		    #print record
