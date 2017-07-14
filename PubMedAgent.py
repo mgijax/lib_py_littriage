@@ -165,7 +165,7 @@ class PubMedAgent:
 		    print ID_CONVERTER_URL % (XML, doiID)
 		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, forUrl))
 		    record = string.strip(response.read())
-		    #print record
+		    print record
 		    xmldoc = xml.dom.minidom.parseString(record)
 		    pubmedIDs = xmldoc.getElementsByTagName("Id")
 		    if doiID not in mapping:
