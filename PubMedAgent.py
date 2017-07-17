@@ -79,6 +79,8 @@ class PubMedReference:
 	self.issue = None
 	self.pages = None
 	self.abstract = None
+	self.volume = None
+	self.primaryAuthor = None
 	# add other fields as needed
 
 	self.errorMessage = errorMessage
@@ -128,6 +130,14 @@ class PubMedReference:
 	self.abstract = abstract
     def getAbstract(self):
 	return self.abstract
+    def setVolume(self, volume):
+	self.volume = volume
+    def getVolume(self):
+	return self.volume
+    def setPrimaryAuthor(self, pAuthor):
+	self.primaryAuthor = pAuthor
+    def getPrimaryAuthor(self):
+	return self.primaryAuthor
     # add other accessors as needed
 
 class PubMedAgent:
@@ -279,7 +289,6 @@ class PubMedAgentMedline (PubMedAgent):
 	if string.find(medLineRecord, 'Error occurred:') !=  -1:
 	    pubMedRef = PubMedReference(errorMessage = medLineRecord)
 	else: 
-
 	    pubMedRef = PubMedReference()
 	    tokens = string.split(medLineRecord, '\n')
 
@@ -326,6 +335,8 @@ class PubMedAgentMedline (PubMedAgent):
 		    isTI = 1
 		    tiList.append(value)
 		elif line.startswith('AU'):
+		    if auList == []:
+			pubMedRef.setPrimaryAuthor(value)
 		    auList.append(value)
 		elif line.startswith('TA'):
 		    pubMedRef.setJournal(value)
@@ -340,6 +351,8 @@ class PubMedAgentMedline (PubMedAgent):
 		elif line.startswith('AB'):
 		    isAB = 1
 		    abList.append(value)
+		elif line.startswith('VI'):
+		    pubMedRef.setVolume(value)
 	    pubMedRef.setAbstract(string.join(abList))
 	    pubMedRef.setAuthors(string.join(auList, ', '))
 	    pubMedRef.setTitle(string.join(tiList))
