@@ -172,12 +172,15 @@ class PubMedAgent:
 		    forUrl = doiID.replace(')', '*')
 		    forUrl = doiID.replace(';', '*')
 		    forUrl = doiID.replace(':', '*')
-		    print ID_CONVERTER_URL % (XML, doiID)
 		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, forUrl))
 		    record = string.strip(response.read())
-		    print record
 		    xmldoc = xml.dom.minidom.parseString(record)
 		    pubmedIDs = xmldoc.getElementsByTagName("Id")
+		    #print '*****\n\n'
+		    #print ID_CONVERTER_URL % (XML, doiID)
+		    #print record
+		    #print 'pubmedIDs : ', str(pubmedIDs)
+		    #print 'doiID : ', doiID
 		    if doiID not in mapping:
 			mapping[doiID] = []
 		    if pubmedIDs == []:
@@ -195,6 +198,7 @@ class PubMedAgent:
 		    raise Exception("Can't connect, reason: %s" % e.reason)
 		else:
 			raise Exception('Unknown exception: %s' % e)
+
 	    return mapping
 
 	def getReferenceInfo(self, doiList):
@@ -218,6 +222,7 @@ class PubMedAgent:
 	    # translate doiList to doiID/pubmedID dictionary
 	    # pubMedDict = {doiID:pubMedID, ...}
 	    #print 'getReferences doiList: %s' % doiList
+
 	    pubMedDict = self.getPubMedIDs(doiList)
 
 	    # call getReferenceInfo - which is implemented by the subclass.
@@ -234,8 +239,8 @@ class PubMedAgent:
 		    if pubMedID == None:
 			 mapping[doiID].append(refObject)
 		    else:
-			refObject = self.getReferenceInfo(pubMedID)
-		    mapping[doiID].append(refObject)
+			 refObject = self.getReferenceInfo(pubMedID)
+		         mapping[doiID].append(refObject)
 	    return mapping
     
 class PubMedAgentJson (PubMedAgent):
