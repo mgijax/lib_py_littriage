@@ -275,10 +275,10 @@ class PubMedAgentMedline (PubMedAgent):
 	# Init the reference we will return
 	pubMedRef = None
 	try:
-	    #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
+	    print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
 	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
 	    medLineRecord = string.strip(response.read())
-	    #print '"%s"' % medLineRecord
+	    print '"%s"' % medLineRecord
 	except IOError, e:
 	    if hasattr(e, 'code'): # HTTPError
 		print 'http error code: ', e.code
@@ -308,7 +308,9 @@ class PubMedAgentMedline (PubMedAgent):
 	    isTI = 0
 	    tiList = []
 	    for line in tokens:
-		#print line
+
+		print line
+
 		# handle multilined Abstract
 		if isAB == 1 and line.startswith('      '):
 		    # strip the leading spaces
@@ -321,6 +323,7 @@ class PubMedAgentMedline (PubMedAgent):
 			value = (map(string.strip,string.split(line, '-')))[1]
 		    else:
 			continue
+
 		# handle multilined Title
 		if isTI == 1 and line.startswith('      '):
 		    # strip the leading spaces
@@ -330,9 +333,11 @@ class PubMedAgentMedline (PubMedAgent):
 		    # check for other continues lines we don't care about
 		    # e.g. AD
 		    if not line.startswith('      '):
-			value = (map(string.strip,string.split(line, '-', 1)))[1]
+			value = (map(string.strip,string.split(line, '-')))[1]
+			#value = (map(string.strip,string.split(line, '-', 1)))[1]
 		    else:
 			continue
+
 		# parse MedLine format
 		if line.startswith('PMID'):
 		    pubMedRef.setPubMedID(value) 
