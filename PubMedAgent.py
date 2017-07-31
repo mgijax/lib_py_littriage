@@ -320,7 +320,8 @@ class PubMedAgentMedline (PubMedAgent):
 		    # check for other continues lines we don't care about
 		    # e.g. AD
 		    if not line.startswith('      '):
-			value = (map(string.strip,string.split(line, ' -')))[1]
+			print line
+			value = (map(string.strip,string.split(line, '-')))[1]
 		    else:
 			continue
 
@@ -333,6 +334,7 @@ class PubMedAgentMedline (PubMedAgent):
 		    # check for other continues lines we don't care about
 		    # e.g. AD
 		    if not line.startswith('      '):
+			print line
 			value = (map(string.strip,string.split(line, ' -')))[1]
 		    else:
 			continue
