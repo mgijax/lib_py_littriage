@@ -309,6 +309,8 @@ class PubMedAgentMedline (PubMedAgent):
 	    tiList = []
 
 	    for line in tokens:
+		# parse MedLine format
+
 		print line
 
 		if isTI == 1:
@@ -325,12 +327,14 @@ class PubMedAgentMedline (PubMedAgent):
                     else:
 		        isAB = 0
 
+		# strip by first '-'
 		try:
 		    value = (map(string.strip,string.split(line, '-', 1)))[1]
+		# else use entire line
                 except:
 		    value = string.strip(line)
 
-		# parse MedLine format
+		# tags of interest
 		if line.startswith('PMID'):
 		    pubMedRef.setPubMedID(value) 
 
@@ -338,6 +342,7 @@ class PubMedAgentMedline (PubMedAgent):
 		    isTI = 1
 		    tiList.append(value)
 
+		# skip 'AUID-'
 		elif line.startswith('AU  -'):
 		    if auList == []:
 			pubMedRef.setPrimaryAuthor(value)
