@@ -330,7 +330,7 @@ class PubMedAgentMedline (PubMedAgent):
 		    # check for other continues lines we don't care about
 		    # e.g. AD
 		    if not line.startswith('      '):
-			value = (map(string.strip,string.split(line, '-')))[1]
+			value = (map(string.strip,string.split(line, '-', 1)))[1]
 		    else:
 			continue
 		# parse MedLine format
