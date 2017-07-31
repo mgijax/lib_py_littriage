@@ -307,8 +307,10 @@ class PubMedAgentMedline (PubMedAgent):
 	    # title, multilined w/o additional tag
 	    isTI = 0
 	    tiList = []
+
 	    for line in tokens:
 		print line
+
 		# handle multilined Abstract
 		if isAB == 1 and line.startswith('      '):
 		    # strip the leading spaces
@@ -321,6 +323,7 @@ class PubMedAgentMedline (PubMedAgent):
 			value = (map(string.strip,string.split(line, '-')))[1]
 		    else:
 			continue
+
 		# handle multilined Title
 		if isTI == 1 and line.startswith('      '):
 		    # strip the leading spaces
@@ -330,9 +333,11 @@ class PubMedAgentMedline (PubMedAgent):
 		    # check for other continues lines we don't care about
 		    # e.g. AD
 		    if not line.startswith('      '):
+			print line
 			value = (map(string.strip,string.split(line, '-', 1)))[1]
 		    else:
 			continue
+
 		# parse MedLine format
 		if line.startswith('PMID'):
 		    pubMedRef.setPubMedID(value) 
