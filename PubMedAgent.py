@@ -311,60 +311,61 @@ class PubMedAgentMedline (PubMedAgent):
 	    for line in tokens:
 		print line
 
-		# handle multilined Abstract
-		if isAB == 1 and line.startswith('      '):
-		    # strip the leading spaces
-		    abList.append(string.strip(line))
-		else:
-		    isAB = 0
-		    # check for other continues lines we don't care about
-		    # e.g. AD
-		    if not line.startswith('      '):
-			print line
-			value = (map(string.strip,string.split(line, '-')))[1]
-		    else:
-			continue
+		if isTI == 1:
+		    if line.startswith('      '):
+		        tiList.append(string.strip(line))
+		        continue
+                    else:
+		        isTI = 0
 
-		# handle multilined Title
-		if isTI == 1 and line.startswith('      '):
-		    # strip the leading spaces
-		    tiList.append(string.strip(line))
-		else:
-		    isTI = 0
-		    # check for other continues lines we don't care about
-		    # e.g. AD
-		    if not line.startswith('      '):
-			print line
-			value = (map(string.strip,string.split(line, ' -')))[1]
-		    else:
-			continue
+		if isAB == 1:
+		    if line.startswith('      '):
+		        abList.append(string.strip(line))
+		        continue
+                    else:
+		        isAB = 0
+
+		try:
+		    value = (map(string.strip,string.split(line, '-', 1)))[1]
+                except:
+		    value = string.strip(line)
 
 		# parse MedLine format
 		if line.startswith('PMID'):
 		    pubMedRef.setPubMedID(value) 
+
 		elif line.startswith('TI'):
 		    isTI = 1
 		    tiList.append(value)
+
 		elif line.startswith('AU  -'):
 		    if auList == []:
 			pubMedRef.setPrimaryAuthor(value)
 		    auList.append(value)
+
 		elif line.startswith('TA'):
 		    pubMedRef.setJournal(value)
+
 		elif line.startswith('DP'):
 		    pubMedRef.setDate(value)
 		    #print 'setting date in reference from: %s' % value
 		    pubMedRef.setYear(string.split(value, ' ', 1)[0])
+
 		elif line.startswith('IP'):
 		    pubMedRef.setIssue(value)
+
 		elif line.startswith('PG'):
 		    pubMedRef.setPages(value)
+
 		elif line.startswith('AB'):
 		    isAB = 1
 		    abList.append(value)
+
 		elif line.startswith('VI'):
 		    pubMedRef.setVolume(value)
+
 	    pubMedRef.setAbstract(string.join(abList))
 	    pubMedRef.setAuthors(string.join(auList, ', '))
 	    pubMedRef.setTitle(string.join(tiList))
+
 	return pubMedRef
