@@ -370,7 +370,7 @@ class PubMedAgentMedline (PubMedAgent):
 		    pubMedRef.setVolume(value)
 
 	    pubMedRef.setAbstract(string.join(abList))
-	    pubMedRef.setAuthors(string.join(auList, ', '))
+	    pubMedRef.setAuthors(string.join(auList, '; '))
 	    pubMedRef.setTitle(string.join(tiList))
 
 	return pubMedRef
