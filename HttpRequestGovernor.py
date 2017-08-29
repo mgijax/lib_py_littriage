@@ -108,13 +108,11 @@ class HttpRequestGovernor:
 
         return waitTime
     
-    def get (self, url, retries = 3):
+    def get (self, url):
         # Purpose: wait until we can make a request of the given URL (within our throttling constraints)
-        #   then return the results.  If errors occur, do up to the given number of retries before failing.
+        #   then return the results.
         # Returns: response string
-        # Throws: 
-        #    1. urllib2.HTTPError -
-        #    2. urllib2.URLError - couldn't make a connection for the given URL
+        # Throws: Exception if there are problems reading from url
         
         waitTime = self.getWaitTime()
         if (waitTime > 0):
