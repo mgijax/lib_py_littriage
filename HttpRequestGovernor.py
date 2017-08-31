@@ -15,6 +15,7 @@
 
 import time
 import urllib2
+import runCommand
 
 # constants for convenience
 SECONDS_PER_MINUTE = 1000.0
@@ -26,6 +27,17 @@ DEFAULT_PER_REQUEST = 6     # min seconds between requests
 DEFAULT_PER_MINUTE = 8      # max requests per minute
 DEFAULT_PER_HOUR = 280      # max requests per hour
 DEFAULT_PER_DAY = 6700      # max requests per day
+
+def readURL (url):
+    # Purpose: given constraints on reading from https connections in python 2.7, we're just going
+    #    to shell out and use curl for this
+    # Returns: string returned
+    # Throws: Exception if we have problems reading from 'url'
+
+    stdout, stderr, statusCode = runCommand.runCommand("curl '%s'" % url)
+    if statusCode != 0:
+        raise Exception('Failed to read from url (code %s)' % statusCode)
+    return stdout
 
 
 class HttpRequestGovernor:
@@ -101,10 +113,10 @@ class HttpRequestGovernor:
                 if len(self.requestsThisDay) > self.requestsPerDay:
                     waitTime = max(waitTime, (self.requestsThisDay[0] + SECONDS_PER_DAY) - now)
 
-        self.lastRequestTime = now
-        self.requestsThisMinute.append(now)
-        self.requestsThisHour.append(now)
-        self.requestsThisDay.append(now)
+        self.lastRequestTime = now + waitTime
+        self.requestsThisMinute.append(self.lastRequestTime)
+        self.requestsThisHour.append(self.lastRequestTime)
+        self.requestsThisDay.append(self.lastRequestTime)
 
         return waitTime
     
@@ -122,15 +134,10 @@ class HttpRequestGovernor:
         self.requestCount = self.requestCount + 1
         
         try:
-            response = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise Exception('The server could not fulfill the request (code %s)' % e.code)
-        except urllib2.URLError, e:
-            raise Exception('Could not reach the server at %s (reason %s)' % (url, e.reason))
-        else:
-            return ''.join(response.readlines())
-
-        raise Exception('Unknown failure in reading from %s' % url)
+            response = readURL(url)
+        except Exception, e:
+            raise Exception('The server could not fulfill the request: %s' % str(e))
+        return response
     
     def getStatistics (self):
         # Purpose: get a list of statitical data about governor performance so far
