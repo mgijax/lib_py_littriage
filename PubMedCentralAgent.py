@@ -8,8 +8,8 @@
 #	3. Run with it.
 
 import urllib2
-import runCommand
 import xml.dom.minidom 
+import HttpRequestGovernor
 
 ###--- Globals ---###
 
@@ -58,17 +58,6 @@ def _splitList (
     else:
         return [ items [:n] ] + _splitList (items [n:], n)
 
-def readURL (url):
-    # Purpose: given constraints on reading from https connections in python 2.7, we're just going
-    #    to shell out and use curl for this
-    # Returns: string returned
-    # Throws: Exception if we have problems reading from 'url'
-
-    stdout, stderr, statusCode = runCommand.runCommand("curl '%s'" % url)
-    if statusCode != 0:
-        raise Exception('Failed to read from url (code %s)' % statusCode)
-    return stdout
-
 ###--- Classes ---###
 
 class IDConverterAgent:
@@ -98,7 +87,7 @@ class IDConverterAgent:
         sublists = _splitList(map(lambda x : x.strip(), doiIDs), 20)
 
         for sublist in sublists:
-            lines = readURL(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, ','.join(doiIDs)))
+            lines = HttpRequestGovernor.readURL(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, ','.join(doiIDs)))
             
             # Lines have comma-delimited columns.  String values are in double-quotes.
             # Standardize lines by stripping out the double-quotes, then splitting on commas.
@@ -148,7 +137,7 @@ class PDFLookupAgent:
             return urls
 
         for pmcID in map(lambda x: x.strip(), pmcIDs):
-            lines = readURL(PDF_LOOKUP_URL % pmcID)
+            lines = HttpRequestGovernor.readURL(PDF_LOOKUP_URL % pmcID)
             xmldoc = xml.dom.minidom.parseString(lines)
 
             links = {}      # maps from format to url for this pmcID
