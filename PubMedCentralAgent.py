@@ -58,7 +58,7 @@ def _splitList (
     else:
         return [ items [:n] ] + _splitList (items [n:], n)
 
-def _readURL (url):
+def readURL (url):
     # Purpose: given constraints on reading from https connections in python 2.7, we're just going
     #    to shell out and use curl for this
     # Returns: string returned
@@ -98,7 +98,7 @@ class IDConverterAgent:
         sublists = _splitList(map(lambda x : x.strip(), doiIDs), 20)
 
         for sublist in sublists:
-            lines = _readURL(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, ','.join(doiIDs)))
+            lines = readURL(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, ','.join(doiIDs)))
             
             # Lines have comma-delimited columns.  String values are in double-quotes.
             # Standardize lines by stripping out the double-quotes, then splitting on commas.
@@ -148,7 +148,7 @@ class PDFLookupAgent:
             return urls
 
         for pmcID in map(lambda x: x.strip(), pmcIDs):
-            lines = _readURL(PDF_LOOKUP_URL % pmcID)
+            lines = readURL(PDF_LOOKUP_URL % pmcID)
             xmldoc = xml.dom.minidom.parseString(lines)
 
             links = {}      # maps from format to url for this pmcID
