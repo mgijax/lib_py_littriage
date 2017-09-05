@@ -53,7 +53,7 @@ def _splitList (
     # Example:
     #    _splitList ( [ 'a', 'b', 'c', 'd', 'e' ], 2) ===> [ ['a', 'b'], ['c', 'd'], ['e'] ]
 
-    if len (items) < n:
+    if len (items) <= n:
         return [ items ]
     else:
         return [ items [:n] ] + _splitList (items [n:], n)
@@ -87,7 +87,7 @@ class IDConverterAgent:
         sublists = _splitList(map(lambda x : x.strip(), doiIDs), 20)
 
         for sublist in sublists:
-            lines = HttpRequestGovernor.readURL(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, ','.join(doiIDs)))
+            lines = HttpRequestGovernor.readURL(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, ','.join(sublist)))
             
             # Lines have comma-delimited columns.  String values are in double-quotes.
             # Standardize lines by stripping out the double-quotes, then splitting on commas.
@@ -111,7 +111,7 @@ class IDConverterAgent:
                     else:
                         pmcIDs[line[doiCol]] = None
                 
-            return pmcIDs 
+        return pmcIDs 
     
 class PDFLookupAgent:
     def __init__ (self):
