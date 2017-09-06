@@ -18,7 +18,7 @@ import urllib2
 import runCommand
 
 # constants for convenience
-SECONDS_PER_MINUTE = 1000.0
+SECONDS_PER_MINUTE = 60.0
 SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
 SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
 
