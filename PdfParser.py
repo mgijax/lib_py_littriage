@@ -138,6 +138,16 @@ class PdfParser:
 					doiID = doiID.replace('\n', '', 1)
 					nl = doiID.find('\n')
 
+				# special case for Molecular and Cellular Biology journal, which has DOI IDs
+				# from 20 to 32 characters -- but which are often interrupted by line breaks
+				# in their new (circa late-2016) PDF format.  As a workaround for the most
+				# common case, remove any newlines within the first 20 characters of the ID.
+				
+				if doiID.startswith('10.1128/'):
+					while 0 <= nl <= 20:
+						doiID = doiID.replace('\n', '', 1)
+						nl = doiID.find('\n')
+				
 				# if there is a newline right after the slash,
 				# just remove it
 
