@@ -144,7 +144,7 @@ class PdfParser:
 				# common case, remove any newlines within the first 20 characters of the ID.
 				
 				if doiID.startswith('10.1128/'):
-					while 0 <= nl <= 20:
+					while 0 <= nl < 20:
 						doiID = doiID.replace('\n', '', 1)
 						nl = doiID.find('\n')
 				
