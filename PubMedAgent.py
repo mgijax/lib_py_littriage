@@ -275,10 +275,10 @@ class PubMedAgentMedline (PubMedAgent):
 	# Init the reference we will return
 	pubMedRef = None
 	try:
-	    print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
+	    #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
 	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
 	    medLineRecord = string.strip(response.read())
-	    print '"%s"' % medLineRecord
+	    #print '"%s"' % medLineRecord
 	except IOError, e:
 	    if hasattr(e, 'code'): # HTTPError
 		print 'http error code: ', e.code
@@ -311,7 +311,7 @@ class PubMedAgentMedline (PubMedAgent):
 	    for line in tokens:
 		# parse MedLine format
 
-		print line
+		#print line
 
 		if isTI == 1:
 		    if line.startswith('      '):
