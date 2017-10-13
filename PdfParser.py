@@ -130,11 +130,13 @@ class PdfParser:
 				slash = doiID.find('/')
 				nl = doiID.find('\n')
 
-				# special case for PLoS journals, which often
-				# have a line break in the ID
+				# special case for PLoS journals, which often have a line break in the ID.
+				# PLOS journals have 28-character DOI IDs 99.98% of the time.  Out of 10,000+
+				# PLOS DOI IDs in MGI so far, the only others are single IDs with 21 and 24
+				# characters.  So if we encounter a newline within the first 21 characters,
+				# we can just remove it.
 
-				if doiID.startswith('10.1371/') and \
-					(0 < nl < 17):
+				if doiID.startswith('10.1371/') and (0 <= nl < 21):
 					doiID = doiID.replace('\n', '', 1)
 					nl = doiID.find('\n')
 
