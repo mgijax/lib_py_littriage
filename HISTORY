@@ -1,3 +1,9 @@
+TAG: lib_py_littriage-6-0-11-5
+DATE: 12/07/2017
+STAFF: sc
+CHANGES: TR12705 LTLO: refresh info from NLM
+1) comment out debug
+
 TAG: lib_py_littriage-6-0-11-4
 DATE: 12/07/2017
 STAFF: sc

@@ -283,7 +283,7 @@ class PubMedAgentMedline (PubMedAgent):
 	    #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
 	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
 	    medLineRecord = string.strip(response.read())
-	    print '"%s"' % medLineRecord
+	    #print '"%s"' % medLineRecord
 	except IOError, e:
 	    if hasattr(e, 'code'): # HTTPError
 		print 'http error code: ', e.code
