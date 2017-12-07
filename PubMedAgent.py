@@ -70,7 +70,8 @@ class PubMedReference:
     #	error message is then accessible from getErrorMessage().
 
     def __init__ (self, errorMessage = None):
-	self.pubMedID = None	
+	self.pubMedID = None
+	self.doiID = None
 	self.title = None
 	self.authors = None
 	self.journal = None
@@ -98,6 +99,10 @@ class PubMedReference:
 	self.pubMedID = pmID
     def getPubMedID(self):
 	return self.pubMedID
+    def setDoiID(self, doiID):
+	self.doiID = doiID
+    def getDoiID(self):
+	return self.doiID
     def setTitle(self, title):
 	self.title = title
     def getTitle(self):
@@ -278,7 +283,7 @@ class PubMedAgentMedline (PubMedAgent):
 	    #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
 	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
 	    medLineRecord = string.strip(response.read())
-	    #print '"%s"' % medLineRecord
+	    print '"%s"' % medLineRecord
 	except IOError, e:
 	    if hasattr(e, 'code'): # HTTPError
 		print 'http error code: ', e.code
@@ -368,6 +373,9 @@ class PubMedAgentMedline (PubMedAgent):
 
 		elif line.startswith('VI'):
 		    pubMedRef.setVolume(value)
+
+		elif line.startswith('AID') and (string.find(line, '[doi]')):
+		    pubMedRef.setDoiID(string.strip(string.split(line, '-')[1].split('[')[0]))
 
 	    pubMedRef.setAbstract(string.join(abList))
 	    pubMedRef.setAuthors(string.join(auList, '; '))
