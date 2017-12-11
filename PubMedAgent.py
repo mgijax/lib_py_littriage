@@ -374,7 +374,7 @@ class PubMedAgentMedline (PubMedAgent):
 		elif line.startswith('VI'):
 		    pubMedRef.setVolume(value)
 
-		elif line.startswith('AID') and (string.find(line, '[doi]')):
+		elif line.startswith('AID') and (string.find(line, '[doi]') > 0):
 		    pubMedRef.setDoiID(string.strip(string.split(line, '-')[1].split('[')[0]))
 
 	    pubMedRef.setAbstract(string.join(abList))
