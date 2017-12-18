@@ -1,3 +1,11 @@
+TAG: lib_py_littriage-6-0-11-8
+DATE: 12/18/2017
+STAFF: sc
+CHANGES:
+1) TR12727 - parsing PNAS doiIDs with no '/'
+2) TR12739 - differentiating btwn  10.1126/science
+    and  10.1126/scitranslmed
+
 TAG: lib_py_littriage-6-0-11-7
 TAG: lib_py_littriage-6-0-11-6
 DATE: 12/11/2017
@@ -34,4 +42,4 @@ TAG: none
 DATE: 6/1/2017
 STAFF: jsb
 CHANGES:
-1) new product, initial addition
+

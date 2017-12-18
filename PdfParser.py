@@ -17,6 +17,7 @@ LITPARSER = None
 # 1. DOI prefix (case insensitive)
 # 2. may be followed by a colon or space (or not)
 # 3. followed by anything else until we reach a space, tab, or semicolon
+# 10,  followed by '.', followed by any number of 0-9 or '.' 
 DOI_RE = re.compile('(10\.[0-9\.]+/[^ \t;]+)')
 
 # regex specifically for recognizing IDs from Blood journal
@@ -27,6 +28,16 @@ SCIENCE_DOI_RE = re.compile('(10\.1126/[a-zA-Z0-9\-\.]+)')
 
 # regex for finding "accepted" string
 ACCEPTED_RE = re.compile('accepted', re.IGNORECASE)
+
+# regex specifically for recognizing IDs from Proc Natl Acad Sci (PNAS) journal
+# examples: matches 
+# www.pnas.org/cgi/doi/10.1073/pnas.0931458100 OR www.pnas.orgcgidoi10.1073pnas.0931458100 OR 
+# www.pnas.orgcgidoi10.1073#pnas.0931458100 f
+#\W? match 0 or 1 non-alphanumeric between '10.1073' and 'pnas'
+PNAS_DOI_RE = re.compile('(10\.1073\W?[pnas\.[0-9]+)')
+
+# this one matches optional '/' between '10.1073' and 'pnas'
+#PNAS_DOI_RE = re.compile('(10\.1073/*pnas\.[0-9]+)')
 
 ###--- Functions ---###
 
@@ -120,13 +131,11 @@ class PdfParser:
 		# Returns: string DOI ID or None (if no ID can be found)
 		# Throws: Exception if this library has not been properly
 		#	initialized or if there are errors in parsing the file
-
 		self._loadFullText()
 		if self.fullText:
 			match = DOI_RE.search(self.fullText)
 			if match:
 				doiID = match.group(1)
-
 				slash = doiID.find('/')
 				nl = doiID.find('\n')
 
@@ -184,12 +193,23 @@ class PdfParser:
 				# if this is a Science DOI ID, we instead need
 				# to find and return the last DOI ID for the
 				# PDF file.
-
-				if doiID.startswith('10.1126/'):
-					return self._getScienceID()
-
+				if doiID.startswith('10.1126/science'):
+				        doiID =  self._getScienceID()
 				return doiID
-
+			else:
+			    # PNAS DOI sometimes have missing '/' so can't be found using DOI_RE
+			    # determine if missing '/' OR intervening SINGLE non-alphnumeric char
+			    match = PNAS_DOI_RE.search(self.fullText)
+			    if match:
+				doiID = match.group(1)
+				# if no '/' 
+				if doiID.find('/') == -1:
+				    if doiID.find('pnas') == 7: # there is no '/', add one
+					doiID = doiID.replace('10.1073', '10.1073/')
+				    elif doiID.find('pnas') == 8: # there  is a single intervening char
+					charToReplace = doiID[7]
+					doiID = doiID.replace(charToReplace, '/')
+				return doiID
 		return None
 
 	def _getScienceID (self):
