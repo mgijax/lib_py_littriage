@@ -82,6 +82,7 @@ class PubMedReference:
 	self.abstract = None
 	self.volume = None
 	self.primaryAuthor = None
+	self.publicationType = None
 	# add other fields as needed
 
 	self.errorMessage = errorMessage
@@ -143,6 +144,10 @@ class PubMedReference:
 	self.primaryAuthor = pAuthor
     def getPrimaryAuthor(self):
 	return self.primaryAuthor
+    def setPublicationType(self, publicationType):
+	self.publicationType = publicationType
+    def getPublicationType(self):
+	return self.publicationType
     # add other accessors as needed
 
 class PubMedAgent:
@@ -313,6 +318,9 @@ class PubMedAgentMedline (PubMedAgent):
 	    isTI = 0
 	    tiList = []
 
+	    # publication type
+	    isPT = 0
+
 	    for line in tokens:
 		# parse MedLine format
 
@@ -376,6 +384,22 @@ class PubMedAgentMedline (PubMedAgent):
 
 		elif line.startswith('AID') and (string.find(line, '[doi]') > 0):
 		    pubMedRef.setDoiID(string.strip(string.split(line, 'AID -')[1].split('[')[0]))
+
+		elif line.startswith('PT'):
+
+		    # find last PT or use list
+		    if isPT == 0:
+		        if value == 'Review':
+		            pubMedRef.setPublicationType(value)
+		     	    isPT = 1
+		        elif value == 'Editorial':
+		            pubMedRef.setPublicationType(value)
+		     	    isPT = 1
+		        elif value == 'Comment':
+		            pubMedRef.setPublicationType(value)
+		     	    isPT = 1
+		        else:
+		            pubMedRef.setPublicationType(value)
 
 	    pubMedRef.setAbstract(string.join(abList))
 	    pubMedRef.setAuthors(string.join(auList, '; '))
