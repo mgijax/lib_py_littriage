@@ -26,6 +26,9 @@ BLOOD_DOI_RE = re.compile('10\.1182/blood([0-9\-]+)')
 # regex specifically for recognizing IDs from Science journals
 SCIENCE_DOI_RE = re.compile('(10\.1126/[a-zA-Z0-9\-\.]+)')
 
+# regex specifically for recognizing IDs from any 10.1177 journal that contains trailing 'Journal'
+JOURNAL_DOI_RE = re.compile('(10\.1177/[a-zA-Z0-9\-\.]+)Journal')
+
 # regex for finding "accepted" string
 ACCEPTED_RE = re.compile('accepted', re.IGNORECASE)
 
@@ -189,6 +192,12 @@ class PdfParser:
 					numbers = match.group(1)
 					revised = hyphenate(numbers)
 					doiID = doiID.replace(numbers, revised)
+
+				# if this is a 10.1177/...Journal DOI ID, 
+				# then remove the trailing 'Journal' text
+				match = JOURNAL_DOI_RE.match(doiID)
+				if match:
+					doiID = doiID.replace('Journal', '')
 
 				# if this is a Science DOI ID, we instead need
 				# to find and return the last DOI ID for the

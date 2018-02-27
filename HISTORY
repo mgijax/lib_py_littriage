@@ -1,3 +1,10 @@
+TAG: lib_py_littriage-6-0-11-10
+DATE: 02/27/2018
+STAFF: lec
+CHANGES:
+1) TR12787/add JOURNAL_DOI_RE check for J Dent Res and other
+10.1177 journals
+
 TAG: lib_py_littriage-6-0-11-9
 DATE: 12/27/2017
 STAFF: lec
