@@ -1,3 +1,9 @@
+TAG: lib_py_littriage-6-0-11-11
+DATE: 03/01/2018
+STAFF: sc
+CHANGES:
+1) TR12786 PubMedAgent add eutils api_key
+
 TAG: lib_py_littriage-6-0-11-10
 DATE: 02/27/2018
 STAFF: lec
