@@ -38,13 +38,13 @@ EUTILS_API_KEY =  os.environ['EUTILS_API_KEY']
 # URL for sending DOI IDs to PubMed to be converted to PubMed IDs;
 # need to fill in tool name, email address, and comma-delimited list of DOI IDs
 #ID_CONVERTER_URL = '''https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?tool=%s&email=%s&format=csv&ids=%s'''
-ID_CONVERTER_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=%s&term=%s&api_key=%s''' % EUTILS_API_KEY
+ID_CONVERTER_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=%s&term=%s&api_key=''' + EUTILS_API_KEY
 
 # URL for sending PubMed IDs to PubMed to get reference data for them;
 # need to fill in comma-delimited list of PubMed IDs, requested return mode,
 # tool name, and email address
 #REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=%s&retmode=%s&tool=%s&email=%s'''
-REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=%s&retmode=%s&rettype=%s&api_key=%s'''  % EUTILS_API_KEY
+REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=%s&retmode=%s&rettype=%s&api_key=''' + EUTILS_API_KEY
 
 ###--- Functions ---###
 
