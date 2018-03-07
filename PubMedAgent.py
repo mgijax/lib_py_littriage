@@ -13,6 +13,7 @@ import string
 import urllib
 import csv
 import xml.dom.minidom 
+import os
 
 ###--- Globals ---###
 
