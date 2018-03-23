@@ -1,3 +1,10 @@
+TAG: lib_py_littriage-6-0-11-12
+DATE: 03/23/2018
+STAFF: lec
+CHANGES: TR12836/EUtils issue
+1) add "[lid]" to EUtils ID_CONVERTER_URL : PubMedAgent.py
+2) add '10.1126/scisignal' : PdfParser.py
+
 TAG: lib_py_littriage-6-0-11-11
 DATE: 03/01/2018
 STAFF: sc

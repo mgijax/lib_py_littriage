@@ -202,7 +202,8 @@ class PdfParser:
 				# if this is a Science DOI ID, we instead need
 				# to find and return the last DOI ID for the
 				# PDF file.
-				if doiID.startswith('10.1126/science'):
+				if doiID.startswith('10.1126/science') or \
+					doiID.startswith('10.1126/scisignal'):
 				        doiID =  self._getScienceID()
 				return doiID
 			else:
