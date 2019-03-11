@@ -553,7 +553,9 @@ class TypedRegexMatcher (object): #{
 	"""
 	Initialize matchesByType and allMatches to empty lists
 	"""
-	self.matchesByType = { t: [] for t in self.regexTypes }
+	self.matchesByType = {}
+	for t in self.regexTypes:
+	    self.matchesByType[t] = []
 	self.allMatches    = []
     # ----------------------------------
 
@@ -597,6 +599,8 @@ class TypedRegexMatcher (object): #{
 
 # -----------------------
 if __name__ == "__main__":	# some ad hoc tests
+
+    print "Running ad hoc tests - modify these as needed"
 
     if False:		# TypedRegexMatcher tests
 	PARA_BOUNDARY = '\n\n'
@@ -654,7 +658,7 @@ if __name__ == "__main__":	# some ad hoc tests
 		"\n1234567890" +			\
 		'\n' + SUPP_DATA_TAG +		\
 		"\n1234567890"
-	doc = open('6114980.txt', 'r').read()
+	#doc = open('6114980.txt', 'r').read()
 	sp = ExtTextSplitter(maxFraction=0.79, minFraction=.05)
 	#print sp.getRegexMatcher().getRegexStr()
 	runSectionTest(sp, doc)
