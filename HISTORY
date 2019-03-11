@@ -1,3 +1,11 @@
+TAG: lib_py_littriage-6-0-11-14 ?
+DATE: 03/11/2019
+STAFF: jak
+CHANGES: TR 12763
+1) add extractedTextSplitter.py
+2) add extTextSplitter subdir w/ scripts for analyzing extractedText reference
+splitting
+
 TAG: lib_py_littriage-6-0-11-13
 DATE: 03/23/2018
 STAFF: lec
