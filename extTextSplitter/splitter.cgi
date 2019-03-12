@@ -1,27 +1,37 @@
 #!/usr/local/bin/python
 
-# extTextSplitter.cgi
+# splitter.cgi
 # CGI for generating a web page that supports curators looking at the
-# how the extractedTextSplitter.py works for different references
+#   how the extractedTextSplitter.py works for different references
 # Curators enter pubmed ID and sees the results of the text section splitting
 
 import sys
-#import httpReader
 import string
 import cgi
 import os
 import os.path
-# How to make this cgi work on bhmgidevapp01 ?
-#sys.path.insert(0, '/home/jsb/jax/prod/lib/python')
+
+# Not sure how to find these modules on various servers (bhmgidevapp01?)
+#sys.path.insert(0, '/home/jsb/jax/prod/lib/python')	# Jon's trick
 #sys.path.insert(0, '/usr/local/lib/python2.4')
 #sys.path.insert(0, '/usr/local/mgi/lib/python')
-sys.path.insert(0, '/home/jak/lib/python/mgi')	# to find db module
+sys.path.insert(0, '/home/jak/lib/python/mgi')	# there should be a better way
 import db
 import runCommand
+
 import extractedTextSplitter
 
 
-def getReferenceInfo(pubmed):
+def getReferenceInfoFromDB(pubmed):
+    # Get reference from the database, return a refInfo object:
+    #  refInfo['pubmed']        = pubmed ID of reference
+    #  refInfo['journal']       = reference journal
+    #  refInfo['title']         = reference title
+    #  refInfo['extractedText'] = the text
+    #  refInfo['pdfLink']       = html for URL link to the PDF
+    # OR
+    # If error, return string with error message
+    #
     # Assumes we are working with a database schema that still has all the
     #   extracted text in one field:  bib_workflow_data.extractedText
     query = '''
@@ -33,7 +43,7 @@ def getReferenceInfo(pubmed):
     where
     a.accid = '%s'
     ''' % str(pubmed)
-    #--, translate(bd.extractedtext, E'\r', ' ') as "text" -- remove ^M's
+
     db.set_sqlServer  ('bhmgidevdb01')
     db.set_sqlDatabase('prod')
     db.set_sqlUser    ('mgd_public')
@@ -53,13 +63,25 @@ def getReferenceInfo(pubmed):
 # ----------------------------
 
 def getPDFfile(fileName):
+    # Get reference from a PDF file, return a refInfo object:
+    #  refInfo['pubmed']        = PDF filename (sorry, reuse of this field. yuck
+    #  refInfo['journal']       = reference journal (not known from PDF)
+    #  refInfo['title']         = reference title (not known from PDF)
+    #  refInfo['extractedText'] = the text extracted from the PDF
+    #  refInfo['pdfLink']       = html for URL link to the PDF
+    # OR
+    # If error, return string with error message
+
+    # where is the directory holding PDFs
     baseDir = '/mgi/all/wts_projects/12700/12763/Data_splitter_test/'
+    relativeToCGI = '../Data_splitter_test/'
 
     refInfo = {}
-    refInfo['pubmed'] = fileName
+    refInfo['pubmed']  = fileName
     refInfo['journal'] = 'from PDF'
-    refInfo['title'] = 'from PDF'
-    refInfo['pdfLink'] = '<a href="../Data_splitter_test/%s" target="_blank">PDF</a>' % fileName
+    refInfo['title']   = 'from PDF'
+    refInfo['pdfLink'] = '<a href="%s%s" target="_blank">PDF</a>' % \
+						    (relativeToCGI, fileName)
 
     cmd = 'pdftotext -enc ASCII7 -q -nopgbrk %s -' % (baseDir + fileName)
     stdout, stderr, retcode = runCommand.runCommand(cmd) 
@@ -72,15 +94,14 @@ def getPDFfile(fileName):
 # ----------------------------
 
 def buildReferenceDetails(refInfo):
+    # Return html (text string) for the reference detail display
+
     splitter = extractedTextSplitter.ExtTextSplitter()
-    #return 'debug: got here'
 
     bodyS, refsS, mfigS,  starS, suppS = splitter.findSections(refInfo['extractedtext'])
     reason = refsS.reason
     refStart = refsS.sPos
     lenText = len(refInfo['extractedtext'])
-    #lenRefs = lenText - refStart
-    #percent = 100 * float(lenRefs)/lenText
 
     textareaWidth = 150
     textareaHeight = 4
@@ -164,6 +185,7 @@ def buildReferenceDetails(refInfo):
 # ----------------------------
 
 def getParameters():
+    # return dict {formfield_name : value}
     form = cgi.FieldStorage()
 
     params = {}
@@ -211,14 +233,13 @@ def buildPage(params):
     if params.has_key('pdffile'):
 	refInfo = getPDFfile(params['pdffile'])
     elif params.has_key('pubmed'):
-	refInfo = getReferenceInfo(params['pubmed'])
+	refInfo = getReferenceInfoFromDB(params['pubmed'])
 
     if type(refInfo) == type(''):
 	refDisplay = refInfo
     else:
 	refDisplay = buildReferenceDetails(refInfo)
 
-    #refDisplay = 'here is some stuff'
     body = '\n'.join(paramReport) + '\n'.join(form) + refDisplay
 
     tail = '</BODY></HTML>'
