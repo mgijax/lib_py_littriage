@@ -183,10 +183,10 @@ class ExtTextSplitter (object): #{
 				spacedOutRegex("Literature Cited")      + '\n',
 				],
 	REF_SECTION_SECONDARY: [spacedOutRegex("Reference")             + '\n',
-				spacedOutRegex("Acknowledgements")      + '\n',
-				spacedOutRegex("Acknowledgments")       + '\n',
-				spacedOutRegex("Conflicts of Interest") + '\n',
-				spacedOutRegex("Conflict of Interest")  + '\n',
+				spacedOutRegex("Acknowledgements")      + r'\b',
+				spacedOutRegex("Acknowledgments")       + r'\b',
+				spacedOutRegex("Conflicts of Interest") + r'\b',
+				spacedOutRegex("Conflict of Interest")  + r'\b',
 				],
 	MANUSCRIPT_FIGURES   : [spacedOutRegex("Figure") + r'\b',
 				spacedOutRegex("Fig")    + r'\b',
@@ -286,7 +286,8 @@ class ExtTextSplitter (object): #{
 	    if self.isTooCloseToEnd(m.sPos):
 		# the only way this error should happen if someone mistakenly
 		#  inserted the supp data term at the end of a PDF.
-		section.reason = 'supp data too close to end'
+		section.reason = 'supp data too close to end (%d)' % \
+								    m.sPos
 
 		# We could search backward for other supp data tags, but
 		#   seems if someone inserted multiple tags, reporting the
@@ -310,7 +311,12 @@ class ExtTextSplitter (object): #{
 	    self.starS is initialized to be length 0 at end of self.extText
 	"""
 	section = self.starS
-	matches = self.matcher.getMatches(self.STAR_METHODS)
+	allMatches = self.matcher.getMatches(self.STAR_METHODS)
+
+	matches = []
+	for m in allMatches:	# collect matches before supp data start
+	    if m.sPos < self.suppS.sPos: matches.append(m)
+	    else: break
 
 	if len(matches) == 0:		# no star methods match
 	    section.sPos = self.suppS.sPos
@@ -319,7 +325,8 @@ class ExtTextSplitter (object): #{
 	    matches.reverse()
 	    m = self.findNotTooLateMatch(matches)
 	    if m == None:			# no reasonable match
-		section.reason = 'star methods too close to end'
+		section.reason = 'star methods too close to end (%d)' % \
+							    matches[-1].sPos
 		section.sPos = self.suppS.sPos
 		section.ePos = self.suppS.sPos
 	    else:			# got a good one
@@ -361,7 +368,7 @@ class ExtTextSplitter (object): #{
 		section.sPos   = m.sPos
 		section.ePos   = self.starS.sPos
 	    else:			# no good secondary match either
-		section.reason = secondaryReason  # seems ok?
+		section.reason = primaryReason + '\n' + secondaryReason
 		section.sPos   = self.starS.sPos
 		section.ePos   = self.starS.sPos
 
@@ -369,12 +376,17 @@ class ExtTextSplitter (object): #{
 	return
     # ----------------------------------
 
-    def findRefsMatch(self, matches):
+    def findRefsMatch(self, allMatches):
 	"""
 	Find a good match in 'matches'.
 	Return the good match object (or None) + reason
 	Assumes: matches is sorted from start of doc to end
 	"""
+	matches = []
+	for m in allMatches:	# collect matches before star methods start
+	    if m.sPos < self.starS.sPos: matches.append(m)
+	    else: break
+
 	if len(matches) != 0:		# matched refs start tags
 	    matches.reverse()		# find last occurances first
 	    m = self.findNotTooLateMatch(matches)
@@ -385,11 +397,13 @@ class ExtTextSplitter (object): #{
 		if float(refLength)/float(self.starS.sPos) <= self.maxFraction:
 		    reason = m.text
 		else:			# refs section too big
-		    reason = "refs match is too big (%d)" % m.sPos
+		    reason = "refs match is too early: '%s' (%d)" % \
+							    (m.text, m.sPos)
 		    m = None
 	    else:			# no good match
+		reason ="refs matches too close to end, earliest: '%s' (%d)" % \
+					(matches[-1].text, matches[-1].sPos)
 		m = None
-		reason = "refs match too close to end"
 	else:				# no start tag found
 	    m = None
 	    reason = 'no refs match'
@@ -417,7 +431,8 @@ class ExtTextSplitter (object): #{
 		break
 	if figMatch:		# got a fig after refs & before any starS
 	    if self.isTooCloseToEnd(figMatch.sPos):
-		section.reason = 'manuscript figs too close to end'
+		section.reason = 'manuscript figs too close to end (%d)' % \
+								figMatch.sPos
 		section.sPos   = self.starS.sPos
 		section.ePos   = self.starS.sPos
 		section.text   = ''
@@ -647,20 +662,22 @@ if __name__ == "__main__":	# some ad hoc tests
 #		PARA_BOUNDARY + 'star*methods' + 	\
 	doc = "1234567890" +				\
 		'\nfigure 1: here is a legend' + 	\
-		'\n' + 'conf  licts of int  erest' + 	\
+		'\n' + 'references' + 			\
 		"\n1234567890" +			\
-		'\n' + 'no references' + 	\
+		'\n' + 'conf  licts of int  erest' + 	\
 		"\n1234567890" +			\
 		'\nTABLE 2: here is a legend' + 	\
 		"\n1234567890" +			\
 		'\nfigure 3: here is a legend' + 	\
 		"\n1234567890" +			\
-		'\n' + 'star*methods' + 	\
+		'\n' + 'star*methods' + 		\
 		"\n1234567890" +			\
-		'\n' + SUPP_DATA_TAG +		\
+		'\n' + SUPP_DATA_TAG +			\
+		"\n1234567890"				\
+		'\n' + 'star*methods' + 		\
 		"\n1234567890"
 	#doc = open('6114980.txt', 'r').read()
-	sp = ExtTextSplitter(maxFraction=0.79, minFraction=.05)
+	sp = ExtTextSplitter(maxFraction=0.9, minFraction=.85)
 	#print sp.getRegexMatcher().getRegexStr()
 	runSectionTest(sp, doc)
 	#doc = "1234567890" + PARA_BOUNDARY + 'foo' + "\n1234567890"
