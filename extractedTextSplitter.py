@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 #!/usr/bin/env python2.4
+#!/usr/bin/env python
 
 """
 ###################
