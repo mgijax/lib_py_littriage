@@ -51,9 +51,9 @@ Basic usage:
     (body, refs, manuFigures, starMethods, suppData) = \
 						splitter.splitSections(text)
 
-    # To get Section objects that contain more info about each predicted
-    #   section (type, text, sPos, ePos, and a "reason" the splitting
-    #     algorithm made its prediction):
+    # To get Section objects that contain more info about each predicted section
+    # (Section Objects contain: type, text, sPos, ePos, and a "reason" the
+    #   splitting algorithm made its prediction - see Section Class below):
 
     (bodyS, refsS, manuFiguresS, starMethodsS, suppDataS) = \
 						splitter.findSections(text)
@@ -66,6 +66,9 @@ Search backward from there for Star Methods
 Search backward from there for References start
 If Refs start is found, search for Manuscript figures: search foward from
     there for a figure legend occurring before the start of Star Methods
+    NOTE this will match any figure/table legend after the start of the refs,
+	even if they are not in an official "manuscript" section.
+	But ending the refs section at any legend is good
 Body = start of text up to References start
 
 There are also minFraction (for all sections) and maxFraction (for references
@@ -154,7 +157,7 @@ class ExtTextSplitter (object): #{
 
     Has: floats: minFraction, maxFraction and a TypedRegexMatcher
 
-	The min/maxFractions are used ... JIM
+	The min/maxFractions are used ... JIM: doc this better
 	once any supp data and "star methods" section are removed from the end
 	of the text.
 	If the length of the predicted reference section is
@@ -175,12 +178,23 @@ class ExtTextSplitter (object): #{
     STAR_METHODS          = 'starMethods'
     SUPP_DATA             = 'suppData'
 
-    # dict defining all the section start tags and their match types
-    # End each w/ \n to force line boundaries
+    # Regex pattern for optional figure legend start
+    # Different journals/articles may have words before "Figure":
+    #   any single word, "\w+",  or the specific word combos below
+    OPT_FIG_START = r'(?:(?:\w+'                                  + \
+		    '|' + spacedOutRegex('supp data')          + \
+		    '|' + spacedOutRegex('supplemental data')  + \
+		    '|' + spacedOutRegex('supplementary data') + \
+		    '|' + spacedOutRegex('extended data')      + \
+		    r') )?'
+
+    # Dict defining all the section start tags and their match types
+    # End each w/ \n or \b to force line or word boundaries
     # The startPattern on TypedRegexMatcher constructor sets '\n' for line start
     regexDict = {
 	REF_SECTION_PRIMARY  : [spacedOutRegex("References")            + '\n',
 				spacedOutRegex("Literature Cited")      + '\n',
+				spacedOutRegex("References and Notes")  + '\n',
 				],
 	REF_SECTION_SECONDARY: [spacedOutRegex("Reference")             + '\n',
 				spacedOutRegex("Acknowledgements")      + r'\b',
@@ -188,9 +202,9 @@ class ExtTextSplitter (object): #{
 				spacedOutRegex("Conflicts of Interest") + r'\b',
 				spacedOutRegex("Conflict of Interest")  + r'\b',
 				],
-	MANUSCRIPT_FIGURES   : [spacedOutRegex("Figure") + r'\b',
-				spacedOutRegex("Fig")    + r'\b',
-				spacedOutRegex("Table")  + r'\b',
+	MANUSCRIPT_FIGURES   : [OPT_FIG_START + spacedOutRegex("Figure")+ r'\b',
+				OPT_FIG_START + spacedOutRegex("Fig")   + r'\b',
+				OPT_FIG_START + spacedOutRegex("Table") + r'\b',
 				],
 	STAR_METHODS         : [spacedOutRegex("Star") + "[ ]*[ *+][ ]*" +
 					    spacedOutRegex("Methods") + '\n',
@@ -292,7 +306,6 @@ class ExtTextSplitter (object): #{
 		# We could search backward for other supp data tags, but
 		#   seems if someone inserted multiple tags, reporting the
 		#   last one that is too close to end is better.
-		# JIM:I guess we could actually check for multiple inserted tags
 	    else: 
 		section.reason = m.text
 		section.sPos   = m.sPos
@@ -378,7 +391,7 @@ class ExtTextSplitter (object): #{
 
     def findRefsMatch(self, allMatches):
 	"""
-	Find a good match in 'matches'.
+	Find a good match in 'allMatches'.
 	Return the good match object (or None) + reason
 	Assumes: matches is sorted from start of doc to end
 	"""
@@ -463,7 +476,7 @@ class ExtTextSplitter (object): #{
 	"""
 	Given a list of matches, return the 1st one that is not too close
 	to the end.
-	  (at least self.minFactor from textEnd JIM: not quite right)
+	  (at least self.minFactor from textEnd JIM: doc better)
 	Return None if we don't find one
 	"""
 	if totalTextLength == 'default': totalTextLength = self.lenExtText
@@ -666,7 +679,7 @@ if __name__ == "__main__":	# some ad hoc tests
 		"\n1234567890" +			\
 		'\n' + 'conf  licts of int  erest' + 	\
 		"\n1234567890" +			\
-		'\nTABLE 2: here is a legend' + 	\
+		'\nsupplementary data TABLE 2: here is a legend' + 	\
 		"\n1234567890" +			\
 		'\nfigure 3: here is a legend' + 	\
 		"\n1234567890" +			\
@@ -677,8 +690,7 @@ if __name__ == "__main__":	# some ad hoc tests
 		'\n' + 'star*methods' + 		\
 		"\n1234567890"
 	#doc = open('6114980.txt', 'r').read()
-	sp = ExtTextSplitter(maxFraction=0.9, minFraction=.85)
+	#doc = "1234567890" + PARA_BOUNDARY + 'foo' + "\n1234567890"
+	sp = ExtTextSplitter(maxFraction=0.9, minFraction=.1)
 	#print sp.getRegexMatcher().getRegexStr()
 	runSectionTest(sp, doc)
-	#doc = "1234567890" + PARA_BOUNDARY + 'foo' + "\n1234567890"
-	#runSectionTest(sp, doc)
