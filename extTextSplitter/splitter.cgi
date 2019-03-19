@@ -44,7 +44,8 @@ def getReferenceInfoFromDB(pubmed):
     a.accid = '%s'
     ''' % str(pubmed)
 
-    db.set_sqlServer  ('bhmgidevdb01')
+    #db.set_sqlServer  ('bhmgidevdb01')
+    db.set_sqlServer  ('bhmgidb01')	# production
     db.set_sqlDatabase('prod')
     db.set_sqlUser    ('mgd_public')
     db.set_sqlPassword('mgdpub')

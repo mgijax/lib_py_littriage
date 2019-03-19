@@ -297,20 +297,11 @@ class ExtTextSplitter (object): #{
 	matches = self.matcher.getMatches(self.SUPP_DATA)
 	if len(matches) != 0:		# matched supp data start tags
 	    m = matches[-1]		# use last match
-	    if self.isTooCloseToEnd(m.sPos):
-		# the only way this error should happen if someone mistakenly
-		#  inserted the supp data term at the end of a PDF.
-		section.reason = 'supp data too close to end (%d)' % \
-								    m.sPos
 
-		# We could search backward for other supp data tags, but
-		#   seems if someone inserted multiple tags, reporting the
-		#   last one that is too close to end is better.
-	    else: 
-		section.reason = m.text
-		section.sPos   = m.sPos
-		section.ePos   = self.lenExtText
-		section.text   = self.extText[section.sPos : section.ePos]
+	    section.reason = m.text
+	    section.sPos   = m.sPos
+	    section.ePos   = self.lenExtText
+	    section.text   = self.extText[section.sPos : section.ePos]
 
 	# else assume self.suppS is already initialized correctly
 	return
@@ -381,7 +372,7 @@ class ExtTextSplitter (object): #{
 		section.sPos   = m.sPos
 		section.ePos   = self.starS.sPos
 	    else:			# no good secondary match either
-		section.reason = primaryReason + '\n' + secondaryReason
+		section.reason = primaryReason + '; \n' + secondaryReason
 		section.sPos   = self.starS.sPos
 		section.ePos   = self.starS.sPos
 
