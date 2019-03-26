@@ -2,7 +2,7 @@
 
 #
 #  Purpose:
-#	   run sql to get references and their extracted text.
+#	   run sql to get the extracted text for bulk set of references
 #
 #  Outputs:     writes directories named by Journal and writes extracted text
 #		files (named by Pubmed ID) into those directories
@@ -13,7 +13,6 @@ import os
 import string
 import time
 import argparse
-#from ConfigParser import ConfigParser
 import db
 
 #-----------------------------------
@@ -51,18 +50,18 @@ def getArgs():
 SQLSEPARATOR = '||'
 QUERY =  \
 '''
-select a.accid pubmed, r.journal, r.title, bd.extractedtext
+select a.accid pubmed, r.journal, bd.extractedtext
 from bib_refs r join bib_workflow_data bd on (r._refs_key = bd._refs_key)
      join acc_accession a on
 	 (a._object_key = r._refs_key and a._logicaldb_key=29 -- pubmed
 	  and a._mgitype_key=1 )
 where
-r.creation_date > '10/01/2017'
--- r.year in (2014)
+--r.creation_date > '10/01/2017'
+r.year  = 2018
 and r._referencetype_key=31576687 -- peer reviewed article
 and bd.haspdf=1
 -- and r.isdiscard = 0
--- and bd._supplemental_key =34026997  -- "supplemental attached"
+and bd._supplemental_key !=34026997  -- "no supplemental attached"
 -- limit 10
 '''
 

@@ -1,3 +1,44 @@
+March 26, 2019
+The files in this subdirectory provide some tools for analyzing the extracted
+text section splitting: extractedTextSplitter.py
+
+bulkGetExtText.py
+    - hits database to pull out a set of references and places the extracted
+      text of these into directories
+
+bulkSplitterReport.py
+    - reads those extracted text files, splits them into sections via
+      extractedTextSplitter.py, and writes a report w/ 1 line per reference
+      so the whole batch of predictions can be pulled into a spreadsheet and
+      analyzed as a group.
+(we split these two steps out so we can run the bulkSplitterReport multiple
+times as we test variations in the splitter w/o hitting the database often
+and slowing down the report generation)
+
+splitter.cgi
+    - an early version of splitter.cgi in the pdfviewer product.
+      Install this in a web server accessible directory (say a TR directory),
+      and you can use it view extracted splits one by one as you debug the
+      splitter.
+    - this assumes you are still using a db schema version with all the
+      extracted text in one field: bib_workflow_data.extractedText
+    - has some other hard coding about where to find PDF files to split
+	(that are not from the database)
+    - So this will need some adjustment to use in the future
+
+compareRefPredictions.py
+    - Compare two sets of REFERENCE section predictions
+    - THIS WAS WRITTEN BEFORE we decided to have extractedTextSplitter.py that
+      splits things into more than just a body and reference section.
+    - So it would have to be adapted to compare two sets of reports from
+      bulkSplitterReport.py, but I'll leave it in this repo as a template
+      for a future comparison script if we start playing with different
+      extractedTextSplitter.py algorithms (or different text extraction tools)
+
+----------------------------------------
+THE REST OF THIS README FILE is a history of different reference splitting
+experiments that were tried during 2018
+
 Analysis (and ultimate python module) for detecting/removing reference sections from text extracted from PDFs
 
 July 13, 2018
