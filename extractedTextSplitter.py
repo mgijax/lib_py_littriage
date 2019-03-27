@@ -434,20 +434,13 @@ class ExtTextSplitter (object): #{
 		figMatch = m
 		break
 	if figMatch:		# got a fig after refs & before any starS
-	    if self.isTooCloseToEnd(figMatch.sPos):
-		section.reason = 'manuscript figs too close to end (%d)' % \
-								figMatch.sPos
-		section.sPos   = self.starS.sPos
-		section.ePos   = self.starS.sPos
-		section.text   = ''
-	    else:		# got a good fig match
-		section.reason  = figMatch.text
-		section.sPos    = figMatch.sPos
-		section.ePos    = self.starS.sPos
-		section.text    = self.extText[section.sPos : section.ePos]
+	    section.reason  = figMatch.text
+	    section.sPos    = figMatch.sPos
+	    section.ePos    = self.starS.sPos
+	    section.text    = self.extText[section.sPos : section.ePos]
 
-		self.refsS.ePos = figMatch.sPos	# adjust end of refs section
-		self.refsS.text = self.extText[self.refsS.sPos: self.refsS.ePos]
+	    self.refsS.ePos = figMatch.sPos	# adjust end of refs section
+	    self.refsS.text = self.extText[self.refsS.sPos: self.refsS.ePos]
 	else:			# no fig match
 	    section.sPos = self.starS.sPos
 	    section.ePos = self.starS.sPos
