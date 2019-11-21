@@ -134,6 +134,7 @@ class PdfParser:
 		# Returns: string DOI ID or None (if no ID can be found)
 		# Throws: Exception if this library has not been properly
 		#	initialized or if there are errors in parsing the file
+		# Note: this would be more aptly named getDoiID()
 		self._loadFullText()
 		if self.fullText:
 			match = DOI_RE.search(self.fullText)
@@ -147,10 +148,30 @@ class PdfParser:
 				# PLOS DOI IDs in MGI so far, the only others are single IDs with 21 and 24
 				# characters.  So if we encounter a newline within the first 21 characters,
 				# we can just remove it.
+				# Also as of new pdftotext util we started using in Oct 2019, the 1st or 2nd
+				#  ID occurrance in the paper may be truncated when a space is inserted
+				#  instead of a line break. So try looking for a couple ID instances.
 
-				if doiID.startswith('10.1371/') and (0 <= nl < 21):
-					doiID = doiID.replace('\n', '', 1)
-					nl = doiID.find('\n')
+				if doiID.startswith('10.1371/'):
+					if (0 <= nl < 21):	# remove potential nl
+						doiID = doiID.replace('\n', '', 1)
+						slash = doiID.find('/')
+						nl = doiID.find('\n')
+					i = 0
+					while len(doiID) < 28:		# try another occurrance
+						if i == 3: break	# quit after 3 tries
+						i += 1
+
+						match = DOI_RE.search(self.fullText, match.end())
+						if not match: break	# odd, this shouldn't happen, bail
+						doiID = match.group(1)
+						slash = doiID.find('/')
+						nl = doiID.find('\n')
+
+						if (0 <= nl < 21):	# remove potential nl
+							doiID = doiID.replace('\n', '', 1)
+							slash = doiID.find('/')
+							nl = doiID.find('\n')
 
 				# special case for Molecular and Cellular Biology journal, which has DOI IDs
 				# from 20 to 32 characters -- but which are often interrupted by line breaks
