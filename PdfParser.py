@@ -21,7 +21,7 @@ LITPARSER = None
 DOI_RE = re.compile('(10\.[0-9\.]+/[^ \t;]+)')
 
 # regex specifically for recognizing IDs from Blood journal
-BLOOD_DOI_RE = re.compile('10\.1182/blood([0-9\-]+)')
+BLOOD_DOI_RE = re.compile('10\.1182/blood([0-9\-\.\s]+)')
 
 # regex specifically for recognizing IDs from Science journals
 SCIENCE_DOI_RE = re.compile('(10\.1126/[a-zA-Z0-9\-\.]+)')
@@ -70,10 +70,13 @@ def hyphenate (s):
 	# Returns: string updated according to 'Purpose', or the input string
 	#	if there are not enough digits
 
-	digits = s.replace('-', '')
+	digits = s.replace('-', '').replace('.', '').replace(' ', '')
 	if len(digits) < 7:
 		return s
-	return '-%s-%s-%s' % (digits[:4], digits[4:6], digits[6:])
+	if s.find('.') >= 0:
+		return '.%s%s%s' % (digits[:4], digits[4:6], digits[6:])
+	else:
+		return '-%s-%s-%s' % (digits[:4], digits[4:6], digits[6:])
 
 ###--- Classes ---###
 
@@ -135,9 +138,39 @@ class PdfParser:
 		# Throws: Exception if this library has not been properly
 		#	initialized or if there are errors in parsing the file
 		# Note: this would be more aptly named getDoiID()
+
 		self._loadFullText()
+
 		if self.fullText:
-			match = DOI_RE.search(self.fullText)
+
+			# PNAS only
+			if self.fullText.find('www.pnas.org') >= 0:
+
+			    	match = PNAS_DOI_RE.search(self.fullText)
+				doiID = match.group(1)
+
+				# may have DCSuppoemental
+				try:
+					if self.fullText.find('DCSupplemental') >= 0:
+						doiID = match.group(2)
+				except:
+					pass
+
+			    	# PNAS DOI sometimes have missing '/' so can't be found using DOI_RE
+			    	# determine if missing '/' OR intervening SINGLE non-alphnumeric char
+				# if no '/' 
+				if doiID.find('/') == -1:
+				  	if doiID.find('pnas') == 7: # there is no '/', add one
+						doiID = doiID.replace('10.1073', '10.1073/')
+				   	elif doiID.find('pnas') == 8: # there is a single intervening char
+						charToReplace = doiID[7]
+						doiID = doiID.replace(charToReplace, '/')
+				return doiID
+
+			# all else
+			else:
+				match = DOI_RE.search(self.fullText)
+
 			if match:
 				doiID = match.group(1)
 				slash = doiID.find('/')
@@ -198,21 +231,23 @@ class PdfParser:
 
 				# strip off trailing parentheses, periods, 
 				# brackets, and whitespace
-
 				doiID = re.sub('[\)\.\]\s]+$', '', doiID)
 
 				# eLife IDs often errantly end with .001
 				if (doiID.find('/eLife') > 0) and (doiID.endswith('.001')):
 					doiID = doiID[:-4]
 
-				# if this is a Blood DOI ID, the hypenation 
-				# sometimes needs tweaking
-
-				match = BLOOD_DOI_RE.match(doiID)
-				if match:
+				# if this is a Blood DOI ID, 
+				# the hypenation sometimes needs tweaking
+				# may contain a '.' or a ' '
+				if doiID.startswith('10.1182/blood'):
+					match = BLOOD_DOI_RE.search(self.fullText)
+					doiID = match.group(0)
 					numbers = match.group(1)
 					revised = hyphenate(numbers)
 					doiID = doiID.replace(numbers, revised)
+					doiID = doiID.replace(' ', '')
+					doiID = doiID.replace('\n', '')
 
 				# if this is a 10.1177/...Journal DOI ID, 
 				# then remove the trailing 'Journal' text
@@ -226,20 +261,7 @@ class PdfParser:
 				if doiID.startswith('10.1126/science') or \
 					doiID.startswith('10.1126/scisignal'):
 				        doiID =  self._getScienceID()
-				return doiID
-			else:
-			    # PNAS DOI sometimes have missing '/' so can't be found using DOI_RE
-			    # determine if missing '/' OR intervening SINGLE non-alphnumeric char
-			    match = PNAS_DOI_RE.search(self.fullText)
-			    if match:
-				doiID = match.group(1)
-				# if no '/' 
-				if doiID.find('/') == -1:
-				    if doiID.find('pnas') == 7: # there is no '/', add one
-					doiID = doiID.replace('10.1073', '10.1073/')
-				    elif doiID.find('pnas') == 8: # there  is a single intervening char
-					charToReplace = doiID[7]
-					doiID = doiID.replace(charToReplace, '/')
+
 				return doiID
 		return None
 

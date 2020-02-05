@@ -1,3 +1,10 @@
+TAG: lib_py_littriage-6-0-15-1
+DATE: 02/05/2020
+STAFF: lec
+PdfParser.py
+TR13224/ltlo: PNAS doi extraction issue
+TR13208/ltlo: blood journal doi extraction is truncated
+
 TAG: lib_py_littriage-6-0-14-2
 DATE: 11/21/2019
 STAFF: jak 
