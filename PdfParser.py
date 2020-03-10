@@ -175,6 +175,7 @@ class PdfParser:
 
 			# all else
 			else:
+				self.fullText = self.fullText.replace(' journal.pone', 'journal.pone')
 				match = DOI_RE.search(self.fullText)
 
 			if match:
