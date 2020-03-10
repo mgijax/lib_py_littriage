@@ -29,6 +29,12 @@ SCIENCE_DOI_RE = re.compile('(10\.1126/[a-zA-Z0-9\-\.]+)')
 # regex specifically for recognizing IDs from any 10.1177 journal that contains trailing 'Journal'
 JOURNAL_DOI_RE = re.compile('(10\.1177/[a-zA-Z0-9\-\.]+)Journal')
 
+# regex specifically for recognizing IDs from any 10.1172/jci. insight
+JCI_DOI_RE = re.compile('(10\.1172/jci\. insight\.[0-9]+)')
+
+# regex specifically for recognizing IDs from any 10.1530/REP
+REP_DOI_RE = re.compile('(doi.org/10\.1530/REP[ \-0-9]+)')
+
 # regex for finding "accepted" string
 ACCEPTED_RE = re.compile('accepted', re.IGNORECASE)
 
@@ -248,6 +254,17 @@ class PdfParser:
 					doiID = doiID.replace(numbers, revised)
 					doiID = doiID.replace(' ', '')
 					doiID = doiID.replace('\n', '')
+
+				if doiID.startswith('10.1172/jci'):
+					match = JCI_DOI_RE.search(self.fullText)
+					doiID = match.group(0)
+					doiID = doiID.replace(' ', '')
+
+				if doiID.startswith('10.1530/REP'):
+					match = REP_DOI_RE.search(self.fullText)
+					doiID = match.group(0)
+					doiID = doiID.replace('doi.org/', '')
+					doiID = doiID.replace(' ', '')
 
 				# if this is a 10.1177/...Journal DOI ID, 
 				# then remove the trailing 'Journal' text
