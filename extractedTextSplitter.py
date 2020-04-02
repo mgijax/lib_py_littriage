@@ -100,7 +100,7 @@ class TypedRegexMatcher	- takes regex's grouped by user defined "type",
                             that represent the matches found
 class TypedMatch	- describes a match from TypedRegexMatcher
 """
-import string
+
 import re
 
 # ----------------------------------

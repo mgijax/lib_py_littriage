@@ -8,7 +8,6 @@
 # 3. start passing DOI IDs (singly or in a list) to the agent and getting
 #	back data in your desired format using getReference(doiID) or getReferences(doiList)
 
-import string
 import urllib.request, urllib.parse, urllib.error
 import csv
 import xml.dom.minidom 
