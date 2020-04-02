@@ -1,4 +1,3 @@
-# Name: PubMedAgent.py
 # Purpose: to provide an easy means to fetch reference data from PubMed in
 #	a variety of formats
 # Usage:
@@ -10,7 +9,7 @@
 #	back data in your desired format using getReference(doiID) or getReferences(doiList)
 
 import string
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import csv
 import xml.dom.minidom 
 import os
@@ -74,188 +73,188 @@ class PubMedReference:
     #	error message is then accessible from getErrorMessage().
 
     def __init__ (self, errorMessage = None):
-	self.pubMedID = None
-	self.doiID = None
-	self.title = None
-	self.authors = None
-	self.journal = None
-	self.date = None
-	self.year = None
-	self.issue = None
-	self.pages = None
-	self.abstract = None
-	self.volume = None
-	self.primaryAuthor = None
-	self.publicationType = None
-	# add other fields as needed
+        self.pubMedID = None
+        self.doiID = None
+        self.title = None
+        self.authors = None
+        self.journal = None
+        self.date = None
+        self.year = None
+        self.issue = None
+        self.pages = None
+        self.abstract = None
+        self.volume = None
+        self.primaryAuthor = None
+        self.publicationType = None
+        # add other fields as needed
 
-	self.errorMessage = errorMessage
+        self.errorMessage = errorMessage
 
-	return
+        return
 
     ###--- setter/getter methods ---###
 
     def isValid(self):
-	return self.errorMessage == None
+        return self.errorMessage == None
 
     def getErrorMessage(self):
-	return self.errorMessage
+        return self.errorMessage
     def setPubMedID(self, pmID):
-	self.pubMedID = pmID
+        self.pubMedID = pmID
     def getPubMedID(self):
-	return self.pubMedID
+        return self.pubMedID
     def setDoiID(self, doiID):
-	self.doiID = doiID
+        self.doiID = doiID
     def getDoiID(self):
-	return self.doiID
+        return self.doiID
     def setTitle(self, title):
-	self.title = title
+        self.title = title
     def getTitle(self):
-	return self.title
+        return self.title
     def setAuthors(self, authors):
-	self.authors = authors
+        self.authors = authors
     def getAuthors(self):
-	return self.authors
+        return self.authors
     def setJournal(self, journal):
-	self.journal = journal
+        self.journal = journal
     def getJournal(self):
-	return self.journal
+        return self.journal
     def setDate(self, date):
-	self.date = date
+        self.date = date
     def getDate(self):
-	return self.date
+        return self.date
     def setYear(self, year):
-	self.year = year
+        self.year = year
     def getYear(self):
-	return self.year
+        return self.year
     def setIssue(self, issue):
-	self.issue = issue
+        self.issue = issue
     def getIssue(self):
-	return self.issue
+        return self.issue
     def setPages(self, pages):
-	self.pages = pages
+        self.pages = pages
     def getPages(self):
-	return self.pages
+        return self.pages
     def setAbstract(self, abstract):
-	self.abstract = abstract
+        self.abstract = abstract
     def getAbstract(self):
-	return self.abstract
+        return self.abstract
     def setVolume(self, volume):
-	self.volume = volume
+        self.volume = volume
     def getVolume(self):
-	return self.volume
+        return self.volume
     def setPrimaryAuthor(self, pAuthor):
-	self.primaryAuthor = pAuthor
+        self.primaryAuthor = pAuthor
     def getPrimaryAuthor(self):
-	return self.primaryAuthor
+        return self.primaryAuthor
     def setPublicationType(self, publicationType):
-	self.publicationType = publicationType
+        self.publicationType = publicationType
     def getPublicationType(self):
-	return self.publicationType
+        return self.publicationType
     # add other accessors as needed
 
 class PubMedAgent:
-	# Is: an agent that interacts with PubMed to get reference data
-	#	for DOI IDs
-	# Does: takes DOI IDs, queries PubMed, and returns PubMedReference
-	#	objects for them
+        # Is: an agent that interacts with PubMed to get reference data
+        #	for DOI IDs
+        # Does: takes DOI IDs, queries PubMed, and returns PubMedReference
+        #	objects for them
 
-	def __init__ (self):
-	    # Purpose: constructor
-	    return
+        def __init__ (self):
+            # Purpose: constructor
+            return
 
-	def getPubMedID (self, doiID):
-		# Purpose: return the PubMed ID corresponding to this doiID, or None
-		#     if there is no corresponding PubMed ID
-		# Throws: Exception if the URL returns an error
-		# Notes: 6/30 - not tested
+        def getPubMedID (self, doiID):
+                # Purpose: return the PubMed ID corresponding to this doiID, or None
+                #     if there is no corresponding PubMed ID
+                # Throws: Exception if the URL returns an error
+                # Notes: 6/30 - not tested
 
-		return self.getPubMedIDs([doiID])[doiID]
+                return self.getPubMedIDs([doiID])[doiID]
 
-	def getPubMedIDs (self, doiList):
-	    # Purpose: return a dictionary mapping from each DOI ID to its
-	    #     corresponding PubMed ID.  If no PubMed ID for a given DOI ID,
-	    #     then that one maps to None.
-	    # Throws: Exception if the URL returns an error
-	    mapping = {}  # {doiid: [pubMedId(s)], ...}
-	    try:
-		#print '### Getting PubMed IDs ###\n'
-		for doiID in doiList:
-		    forUrl = doiID
-		    forUrl = doiID.replace('(', '*')
-		    forUrl = doiID.replace(')', '*')
-		    forUrl = doiID.replace(';', '*')
-		    forUrl = doiID.replace(':', '*')
-		    response = urllib.urlopen(ID_CONVERTER_URL % (XML, forUrl))
-		    record = string.strip(response.read())
-		    xmldoc = xml.dom.minidom.parseString(record)
-		    pubmedIDs = xmldoc.getElementsByTagName("Id")
-		    #print '*****\n\n'
-		    #print ID_CONVERTER_URL % (XML, doiID)
-		    #print record
-		    #print 'pubmedIDs : ', str(pubmedIDs)
-		    #print 'doiID : ', doiID
-		    if doiID not in mapping:
-			mapping[doiID] = []
-		    if pubmedIDs == []:
-			mapping[doiID].append(None)
-		    else:
-			for pmID in pubmedIDs:
-			    #print 'pm: %s' % pmID.firstChild.data
-			    mapping[doiID].append(pmID.firstChild.data)
-	    except IOError, e:
-		if hasattr(e, 'code'): # HTTPError
-		    print 'HTTP error code: ', e.code
-		    raise Exception('HTTP error code: %s' % e.code)
-		elif hasattr(e, 'reason'): # URLError
-		    print "Can't connect, reason: ", e.reason
-		    raise Exception("Can't connect, reason: %s" % e.reason)
-		else:
-			raise Exception('Unknown exception: %s' % e)
+        def getPubMedIDs (self, doiList):
+            # Purpose: return a dictionary mapping from each DOI ID to its
+            #     corresponding PubMed ID.  If no PubMed ID for a given DOI ID,
+            #     then that one maps to None.
+            # Throws: Exception if the URL returns an error
+            mapping = {}  # {doiid: [pubMedId(s)], ...}
+            try:
+                #print '### Getting PubMed IDs ###\n'
+                for doiID in doiList:
+                    forUrl = doiID
+                    forUrl = doiID.replace('(', '*')
+                    forUrl = doiID.replace(')', '*')
+                    forUrl = doiID.replace(';', '*')
+                    forUrl = doiID.replace(':', '*')
+                    response = urllib.request.urlopen(ID_CONVERTER_URL % (XML, forUrl))
+                    record = str.strip(response.read())
+                    xmldoc = xml.dom.minidom.parseString(record)
+                    pubmedIDs = xmldoc.getElementsByTagName("Id")
+                    #print '*****\n\n'
+                    #print ID_CONVERTER_URL % (XML, doiID)
+                    #print record
+                    #print 'pubmedIDs : ', str(pubmedIDs)
+                    #print 'doiID : ', doiID
+                    if doiID not in mapping:
+                        mapping[doiID] = []
+                    if pubmedIDs == []:
+                        mapping[doiID].append(None)
+                    else:
+                        for pmID in pubmedIDs:
+                            #print 'pm: %s' % pmID.firstChild.data
+                            mapping[doiID].append(pmID.firstChild.data)
+            except IOError as e:
+                if hasattr(e, 'code'): # HTTPError
+                    print('HTTP error code: ', e.code)
+                    raise Exception('HTTP error code: %s' % e.code)
+                elif hasattr(e, 'reason'): # URLError
+                    print("Can't connect, reason: ", e.reason)
+                    raise Exception("Can't connect, reason: %s" % e.reason)
+                else:
+                        raise Exception('Unknown exception: %s' % e)
 
-	    return mapping
+            return mapping
 
-	def getReferenceInfo(self, doiList):
-		# Purpose: stub to be implemented by child
-		return
-	
-	def getReference (self, doiID):
-	    # Purpose: returns a dictionary that maps each DOI ID to its
+        def getReferenceInfo(self, doiList):
+                # Purpose: stub to be implemented by child
+                return
+        
+        def getReference (self, doiID):
+            # Purpose: returns a dictionary that maps each DOI ID to its
             #   corresponding PubMedReference object(s) (or None, if there
             #   is no reference data in PubMed for that DOI ID)
-	    # DOI ID can map to multiple PubMed 
-	    # sc - this has not been tested
-		return self.getReferences([doiID])[doiID]
+            # DOI ID can map to multiple PubMed 
+            # sc - this has not been tested
+                return self.getReferences([doiID])[doiID]
 
-	def getReferences (self, doiList):
-	    # Purpose: returns a dictionary that maps each DOI ID to its
-	    #	corresponding PubMedReference object(s) (or None, if there
-	    #	is no reference data in PubMed for that DOI ID)
-	    # Notes: DOI ID can map to multiple PubMed
+        def getReferences (self, doiList):
+            # Purpose: returns a dictionary that maps each DOI ID to its
+            #	corresponding PubMedReference object(s) (or None, if there
+            #	is no reference data in PubMed for that DOI ID)
+            # Notes: DOI ID can map to multiple PubMed
 
-	    # translate doiList to doiID/pubmedID dictionary
-	    # pubMedDict = {doiID:pubMedID, ...}
-	    #print 'getReferences doiList: %s' % doiList
+            # translate doiList to doiID/pubmedID dictionary
+            # pubMedDict = {doiID:pubMedID, ...}
+            #print 'getReferences doiList: %s' % doiList
 
-	    pubMedDict = self.getPubMedIDs(doiList)
+            pubMedDict = self.getPubMedIDs(doiList)
 
-	    # call getReferenceInfo - which is implemented by the subclass.
+            # call getReferenceInfo - which is implemented by the subclass.
 
-	    mapping = {}
-	    #print '### Getting PubMed References ###'
-	    for doiID in pubMedDict:
-		if doiID not in mapping:
-		    mapping[doiID] = []
-		pubMedIdList = pubMedDict[doiID]
-		refObject = None # default, for no pmID
-		#print 'pubMedIdList: %s' % pubMedIdList
-		for pubMedID in pubMedIdList:
-		    if pubMedID == None:
-			 mapping[doiID].append(refObject)
-		    else:
-			 refObject = self.getReferenceInfo(pubMedID)
-		         mapping[doiID].append(refObject)
-	    return mapping
+            mapping = {}
+            #print '### Getting PubMed References ###'
+            for doiID in pubMedDict:
+                if doiID not in mapping:
+                    mapping[doiID] = []
+                pubMedIdList = pubMedDict[doiID]
+                refObject = None # default, for no pmID
+                #print 'pubMedIdList: %s' % pubMedIdList
+                for pubMedID in pubMedIdList:
+                    if pubMedID == None:
+                         mapping[doiID].append(refObject)
+                    else:
+                         refObject = self.getReferenceInfo(pubMedID)
+                         mapping[doiID].append(refObject)
+            return mapping
     
 class PubMedAgentJson (PubMedAgent):
     # Is: an agent that interacts with PubMed to get reference data
@@ -264,8 +263,8 @@ class PubMedAgentJson (PubMedAgent):
     #	for each reference
     # Note: Not implemented
     def __init__ (self):
-	# Purpose: constructor
-	return
+        # Purpose: constructor
+        return
 
     # override method used to format each reference, reporting JSON
     # for this class
@@ -274,139 +273,139 @@ class PubMedAgentMedline (PubMedAgent):
     # Is: an agent that interacts with PubMed to get reference data
     #	for DOI IDs
     # Does: takes DOI IDs, queries PubMed, and returns a Medline-formatted
-    #	string for each reference
+    #	str.for each reference
 
     def __init__ (self):
-	return
+        return
 
     # override method used to format each reference, reporting Medline
     # format for the PubMed request
 
     def getReferenceInfo(self, pubMedID):
-	# Purpose: Implementation of the superclass stub. Given a pubMedID, get a
-	#   MedLine record, parse, create and return a PubMedReference object
-	# Throws: Exception if the URL returns an error
-	# Init the reference we will return
-	pubMedRef = None
-	try:
-	    #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
-	    response = urllib.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
-	    medLineRecord = string.strip(response.read())
-	    #print '"%s"' % medLineRecord
-	except IOError, e:
-	    if hasattr(e, 'code'): # HTTPError
-		print 'http error code: ', e.code
-		raise Exception('HTTP error code: %s' % e.code)
-	    elif hasattr(e, 'reason'): # URLError
-		print "Can't connect, reason: ", e.reason
-		raise Exception("Can't connect, reason: %s" % e.reason)
-	    else:
-		raise Exception('Unknown exception: %s' % e)
+        # Purpose: Implementation of the superclass stub. Given a pubMedID, get a
+        #   MedLine record, parse, create and return a PubMedReference object
+        # Throws: Exception if the URL returns an error
+        # Init the reference we will return
+        pubMedRef = None
+        try:
+            #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
+            response = urllib.request.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
+            medLineRecord = str.strip(response.read())
+            #print '"%s"' % medLineRecord
+        except IOError as e:
+            if hasattr(e, 'code'): # HTTPError
+                print('http error code: ', e.code)
+                raise Exception('HTTP error code: %s' % e.code)
+            elif hasattr(e, 'reason'): # URLError
+                print("Can't connect, reason: ", e.reason)
+                raise Exception("Can't connect, reason: %s" % e.reason)
+            else:
+                raise Exception('Unknown exception: %s' % e)
 
-	# if this pubMedID returns an error, create reference object with
-	# that error message, otherwise parse the record
-	if string.find(medLineRecord, 'Error occurred:') !=  -1:
-	    pubMedRef = PubMedReference(errorMessage = medLineRecord)
-	else: 
-	    pubMedRef = PubMedReference()
-	    tokens = string.split(medLineRecord, '\n')
+        # if this pubMedID returns an error, create reference object with
+        # that error message, otherwise parse the record
+        if str.find(medLineRecord, 'Error occurred:') !=  -1:
+            pubMedRef = PubMedReference(errorMessage = medLineRecord)
+        else: 
+            pubMedRef = PubMedReference()
+            tokens = str.split(medLineRecord, '\n')
 
-	    # Abstract, multilined w/o additional tag
-	    isAB = 0
-	    abList = []
+            # Abstract, multilined w/o additional tag
+            isAB = 0
+            abList = []
 
-	    # author, multilined each with tag
-	    auList = []
+            # author, multilined each with tag
+            auList = []
 
-	    # title, multilined w/o additional tag
-	    isTI = 0
-	    tiList = []
+            # title, multilined w/o additional tag
+            isTI = 0
+            tiList = []
 
-	    # publication type
-	    isPT = 0
+            # publication type
+            isPT = 0
 
-	    for line in tokens:
-		# parse MedLine format
+            for line in tokens:
+                # parse MedLine format
 
-		#print line
+                #print line
 
-		if isTI == 1:
-		    if line.startswith('      '):
-		        tiList.append(string.strip(line))
-		        continue
+                if isTI == 1:
+                    if line.startswith('      '):
+                        tiList.append(str.strip(line))
+                        continue
                     else:
-		        isTI = 0
+                        isTI = 0
 
-		if isAB == 1:
-		    if line.startswith('      '):
-		        abList.append(string.strip(line))
-		        continue
+                if isAB == 1:
+                    if line.startswith('      '):
+                        abList.append(str.strip(line))
+                        continue
                     else:
-		        isAB = 0
+                        isAB = 0
 
-		# strip by first '-'
-		try:
-		    value = (map(string.strip,string.split(line, '-', 1)))[1]
-		# else use entire line
+                # strip by first '-'
+                try:
+                    value = (list(map(str.strip,str.split(line, '-', 1))))[1]
+                # else use entire line
                 except:
-		    value = string.strip(line)
+                    value = str.strip(line)
 
-		# tags of interest
-		if line.startswith('PMID'):
-		    pubMedRef.setPubMedID(value) 
+                # tags of interest
+                if line.startswith('PMID'):
+                    pubMedRef.setPubMedID(value) 
 
-		elif line.startswith('TI'):
-		    isTI = 1
-		    tiList.append(value)
+                elif line.startswith('TI'):
+                    isTI = 1
+                    tiList.append(value)
 
-		# skip 'AUID-'
-		elif line.startswith('AU  -'):
-		    if auList == []:
-			pubMedRef.setPrimaryAuthor(value)
-		    auList.append(value)
+                # skip 'AUID-'
+                elif line.startswith('AU  -'):
+                    if auList == []:
+                        pubMedRef.setPrimaryAuthor(value)
+                    auList.append(value)
 
-		elif line.startswith('TA'):
-		    pubMedRef.setJournal(value)
+                elif line.startswith('TA'):
+                    pubMedRef.setJournal(value)
 
-		elif line.startswith('DP'):
-		    pubMedRef.setDate(value)
-		    #print 'setting date in reference from: %s' % value
-		    pubMedRef.setYear(string.split(value, ' ', 1)[0])
+                elif line.startswith('DP'):
+                    pubMedRef.setDate(value)
+                    #print 'setting date in reference from: %s' % value
+                    pubMedRef.setYear(str.split(value, ' ', 1)[0])
 
-		elif line.startswith('IP'):
-		    pubMedRef.setIssue(value)
+                elif line.startswith('IP'):
+                    pubMedRef.setIssue(value)
 
-		elif line.startswith('PG'):
-		    pubMedRef.setPages(value)
+                elif line.startswith('PG'):
+                    pubMedRef.setPages(value)
 
-		elif line.startswith('AB'):
-		    isAB = 1
-		    abList.append(value)
+                elif line.startswith('AB'):
+                    isAB = 1
+                    abList.append(value)
 
-		elif line.startswith('VI'):
-		    pubMedRef.setVolume(value)
+                elif line.startswith('VI'):
+                    pubMedRef.setVolume(value)
 
-		elif line.startswith('AID') and (string.find(line, '[doi]') > 0):
-		    pubMedRef.setDoiID(string.strip(string.split(line, 'AID -')[1].split('[')[0]))
+                elif line.startswith('AID') and (str.find(line, '[doi]') > 0):
+                    pubMedRef.setDoiID(str.strip(str.split(line, 'AID -')[1].split('[')[0]))
 
-		elif line.startswith('PT'):
+                elif line.startswith('PT'):
 
-		    # find last PT or use list
-		    if isPT == 0:
-		        if value == 'Review':
-		            pubMedRef.setPublicationType(value)
-		     	    isPT = 1
-		        elif value == 'Editorial':
-		            pubMedRef.setPublicationType(value)
-		     	    isPT = 1
-		        elif value == 'Comment':
-		            pubMedRef.setPublicationType(value)
-		     	    isPT = 1
-		        else:
-		            pubMedRef.setPublicationType(value)
+                    # find last PT or use list
+                    if isPT == 0:
+                        if value == 'Review':
+                            pubMedRef.setPublicationType(value)
+                            isPT = 1
+                        elif value == 'Editorial':
+                            pubMedRef.setPublicationType(value)
+                            isPT = 1
+                        elif value == 'Comment':
+                            pubMedRef.setPublicationType(value)
+                            isPT = 1
+                        else:
+                            pubMedRef.setPublicationType(value)
 
-	    pubMedRef.setAbstract(string.join(abList))
-	    pubMedRef.setAuthors(string.join(auList, '; '))
-	    pubMedRef.setTitle(string.join(tiList))
+            pubMedRef.setAbstract(str.join(abList))
+            pubMedRef.setAuthors(str.join(auList, '; '))
+            pubMedRef.setTitle(str.join(tiList))
 
-	return pubMedRef
+        return pubMedRef

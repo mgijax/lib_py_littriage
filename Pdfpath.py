@@ -1,4 +1,3 @@
-'''
 #
 # Pdfpath.py
 #
@@ -17,7 +16,6 @@
 #	- TR12250/Lit Triage
 # 04/04/2019	jak
 #	- TR12763
-'''
 
 import sys
 import os
@@ -43,31 +41,30 @@ if __name__ == '__main__':
     #print getPdfpath('/data/littriage', 'MGI:')
     #print ''
 
-    print 'MGI:1'
-    print getPdfpath('/data/littriage', 'MGI:1')
-    print ''
+    print ('MGI:1')
+    print (getPdfpath('/data/littriage', 'MGI:1'))
+    print ('')
 
-    print 'MGI:11'
-    print getPdfpath('/data/littriage', 'MGI:11')
-    print ''
+    print ('MGI:11')
+    print (getPdfpath('/data/littriage', 'MGI:11'))
+    print ('')
 
-    print 'MGI:111'
-    print getPdfpath('/data/littriage', 'MGI:111')
-    print ''
+    print ('MGI:111')
+    print (getPdfpath('/data/littriage', 'MGI:111'))
+    print ('')
 
-    print 'MGI:1111'
-    print getPdfpath('/data/littriage/', 'MGI:1111')
-    print ''
+    print ('MGI:1111')
+    print (getPdfpath('/data/littriage/', 'MGI:1111'))
+    print ('')
 
-    print 'MGI:11111'
-    print getPdfpath('/data/littriage/', 'MGI:11111')
-    print ''
+    print ('MGI:11111')
+    print (getPdfpath('/data/littriage/', 'MGI:11111'))
+    print ('')
 
-    print 'MGI:111111'
-    print getPdfpath('/data/littriage/', 'MGI:111111')
-    print ''
+    print ('MGI:111111')
+    print (getPdfpath('/data/littriage/', 'MGI:111111'))
+    print ('')
 
-    print 'MGI:1111111'
-    print getPdfpath('/data/littriage/', 'MGI:1111111')
-    print ''
-
+    print ('MGI:1111111')
+    print (getPdfpath('/data/littriage/', 'MGI:1111111'))
+    print ('')

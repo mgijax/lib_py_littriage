@@ -1,4 +1,3 @@
-# Name: PubMedCentralAgent.py
 # Purpose: provide an interface to various services at PubMed Central
 # Usage: 
 #	1. Initialize the module by calling setToolName() and/or setEmailAddress() as desired to override
@@ -7,7 +6,7 @@
 #	PMC IDs and look up)
 #	3. Run with it.
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import xml.dom.minidom 
 import HttpRequestGovernor
 
@@ -68,7 +67,7 @@ class IDConverterAgent:
     
     def getPMCID (self, doiID):
         # Purpose: look up the PMC ID for a single DOI ID
-        # Returns: string (PMC ID) or None (if the DOI ID has no PMC ID)
+        # Returns: str.(PMC ID) or None (if the DOI ID has no PMC ID)
         # Throws: Exception if there are problems communicating with PubMed Central
         
         return self.getPMCIDs([ doiID ])[doiID]
@@ -84,14 +83,14 @@ class IDConverterAgent:
             return pmcIDs
 
         # strip leading & trailing spaces from IDs and split the list into chunks
-        sublists = _splitList(map(lambda x : x.strip(), doiIDs), 20)
+        sublists = _splitList([x.strip() for x in doiIDs], 20)
 
         for sublist in sublists:
             lines = HttpRequestGovernor.readURL(ID_CONVERTER_URL % (TOOL_NAME, EMAIL_ADDRESS, ','.join(sublist)))
             
             # Lines have comma-delimited columns.  String values are in double-quotes.
             # Standardize lines by stripping out the double-quotes, then splitting on commas.
-            lines = map(lambda x: x.split(','), lines.replace('"', '').split('\n'))
+            lines = [x.split(',') for x in lines.replace('"', '').split('\n')]
             
             # first line will have column headers.  We need DOI and PMCID columns.
             if 'DOI' not in lines[0]:
@@ -119,7 +118,7 @@ class PDFLookupAgent:
     
     def getUrl (self, pmcID):
         # Purpose: look up the download URL for a single PMC ID
-        # Returns: string (URL) or None (if the PMC ID has no file to download)
+        # Returns: str.(URL) or None (if the PMC ID has no file to download)
         # Throws: Exception if there are problems communicating with PubMed Central
         
         return self.getUrls([ pmcID ])[pmcID]
@@ -136,7 +135,7 @@ class PDFLookupAgent:
         if not pmcIDs:
             return urls
 
-        for pmcID in map(lambda x: x.strip(), pmcIDs):
+        for pmcID in [x.strip() for x in pmcIDs]:
             lines = HttpRequestGovernor.readURL(PDF_LOOKUP_URL % pmcID)
             xmldoc = xml.dom.minidom.parseString(lines)
 

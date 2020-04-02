@@ -1,4 +1,3 @@
-# Name: HttpRequestGovernor.py
 # Purpose: provides a class for managing the frequency with which we can make HTTP requests,
 #    to ensure a configurable amount of "niceness" when reading from other sites
 # Notes:
@@ -14,7 +13,7 @@
 #    You can also ask the governor to report on its statistics so far.
 
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import runCommand
 
 # constants for convenience
@@ -31,7 +30,7 @@ DEFAULT_PER_DAY = 6700      # max requests per day
 def readURL (url):
     # Purpose: given constraints on reading from https connections in python 2.7, we're just going
     #    to shell out and use curl for this
-    # Returns: string returned
+    # Returns: str.returned
     # Throws: Exception if we have problems reading from 'url'
 
     stdout, stderr, statusCode = runCommand.runCommand("curl '%s'" % url)
@@ -135,7 +134,7 @@ class HttpRequestGovernor:
         
         try:
             response = readURL(url)
-        except Exception, e:
+        except Exception as e:
             raise Exception('The server could not fulfill the request: %s' % str(e))
         return response
     
