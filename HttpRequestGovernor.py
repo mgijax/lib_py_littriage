@@ -14,7 +14,7 @@
 
 import time
 import urllib.request, urllib.error, urllib.parse
-import runCommand
+import subprocess
 
 # constants for convenience
 SECONDS_PER_MINUTE = 60.0
@@ -33,9 +33,7 @@ def readURL (url):
     # Returns: str.returned
     # Throws: Exception if we have problems reading from 'url'
 
-    stdout, stderr, statusCode = runCommand.runCommand("curl '%s'" % url)
-    if statusCode != 0:
-        raise Exception('Failed to read from url (code %s)' % statusCode)
+    stdout = subprocess.getoutput("curl '%s'" % url)
     return stdout
 
 

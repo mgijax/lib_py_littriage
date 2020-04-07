@@ -5,7 +5,7 @@
 
 import os
 import re
-import runCommand
+import subprocess
 
 ###--- Globals ---###
 
@@ -50,7 +50,7 @@ PNAS_DOI_RE = re.compile('(10\.1073\W?[pnas\.[0-9]+)')
 ###--- Functions ---###
 
 def setLitParserDir (
-        directory	# str. path to the litparser product
+        directory	# string path to the litparser product
         ):
         # Purpose: initialize this module by identifying where to find the
         #	litparser product.
@@ -72,7 +72,7 @@ def hyphenate (s):
         #	of the format "-yyyy-mm-others" where the first six digits
         #	are the year, the next two are the month, and then all the
         #	others come at the end
-        # Returns: str.updated according to 'Purpose', or the input string
+        # Returns: string updated according to 'Purpose', or the input string
         #	if there are not enough digits
 
         digits = s.replace('-', '').replace('.', '').replace(' ', '')
@@ -92,7 +92,7 @@ class PdfParser:
         #	access to full text and various bits of information
 
         def __init__ (self,
-                pdfPath		# str. path to PDF file to parse
+                pdfPath		# string  path to PDF file to parse
                 ):
                 # Purpose: constructor
                 # Throws: Exception if the file specified in 'pdfPath' does
@@ -101,8 +101,8 @@ class PdfParser:
                 if not os.path.exists(pdfPath):
                         raise Exception('PDF file does not exist: %s' % pdfPath)
 
-                self.pdfPath = pdfPath	# str. path to the PDF file
-                self.fullText = None	# str. text from the PDF file
+                self.pdfPath = pdfPath	# string  path to the PDF file
+                self.fullText = None	# string  text from the PDF file
                 self.loaded = False	# boolean; did we read the file yet?
                 return
 
@@ -121,17 +121,10 @@ class PdfParser:
 
                 cmd = '%s %s' % (LITPARSER, self.pdfPath)
                 try:
-                        (stdout, stderr, exitCode) = runCommand.runCommand(cmd)
+                        stdout = subprocess.getoutput(cmd)
                 except:
                         # error in attempting to execute parsing script
                         raise Exception('Failed to execute: %s' % cmd)
-
-                # parsing script finished with an error code?
-                if (exitCode != 0):
-                        raise Exception('Failed to parse %s' % self.pdfPath)
-
-                # parsing was successful, so grab the text and note that we
-                # loaded the file
 
                 self.fullText = stdout
                 self.loaded = True
@@ -139,7 +132,7 @@ class PdfParser:
 
         def getFirstDoiID (self):
                 # Purpose: return the first DOI ID from the PDF file
-                # Returns: str.DOI ID or None (if no ID can be found)
+                # Returns: string DOI ID or None (if no ID can be found)
                 # Throws: Exception if this library has not been properly
                 #	initialized or if there are errors in parsing the file
                 # Note: this would be more aptly named getDoiID()
@@ -229,7 +222,7 @@ class PdfParser:
                                         doiID = doiID.replace('\n', '', 1)
                                         nl = doiID.find('\n')
 
-                                # if there is a newline later in the str.
+                                # if there is a newline later in the string 
                                 # trim the ID at that point
 
                                 if (nl >= 0) and (nl > slash):
@@ -323,7 +316,7 @@ class PdfParser:
 
         def getText (self):
                 # Purpose: return the full text extracted from the PDF file
-                # Returns: str.(full text)
+                # Returns: string (full text)
 
                 self._loadFullText()
                 if self.fullText:
