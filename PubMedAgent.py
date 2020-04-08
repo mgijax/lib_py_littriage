@@ -185,14 +185,14 @@ class PubMedAgent:
                     forUrl = doiID.replace(';', '*')
                     forUrl = doiID.replace(':', '*')
                     response = urllib.request.urlopen(ID_CONVERTER_URL % (XML, forUrl))
-                    record = str.strip(response.read())
+                    record = response.read().decode('utf-8')
                     xmldoc = xml.dom.minidom.parseString(record)
                     pubmedIDs = xmldoc.getElementsByTagName("Id")
-                    #print '*****\n\n'
-                    #print ID_CONVERTER_URL % (XML, doiID)
-                    #print record
-                    #print 'pubmedIDs : ', str(pubmedIDs)
-                    #print 'doiID : ', doiID
+                    #print('*****\n\n')
+                    #print(ID_CONVERTER_URL % (XML, doiID))
+                    #print(record)
+                    #print('pubmedIDs : ', str(pubmedIDs))
+                    #print('doiID : ', doiID)
                     if doiID not in mapping:
                         mapping[doiID] = []
                     if pubmedIDs == []:
@@ -287,10 +287,10 @@ class PubMedAgentMedline (PubMedAgent):
         # Init the reference we will return
         pubMedRef = None
         try:
-            #print REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE)
+            #print(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
             response = urllib.request.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
-            medLineRecord = str.strip(response.read())
-            #print '"%s"' % medLineRecord
+            medLineRecord = response.read().decode('utf-8')
+            #print('"%s"' % medLineRecord)
         except IOError as e:
             if hasattr(e, 'code'): # HTTPError
                 print('http error code: ', e.code)
@@ -303,7 +303,7 @@ class PubMedAgentMedline (PubMedAgent):
 
         # if this pubMedID returns an error, create reference object with
         # that error message, otherwise parse the record
-        if str.find(medLineRecord, 'Error occurred:') !=  -1:
+        if medLineRecord.find('Error occurred:') !=  -1:
             pubMedRef = PubMedReference(errorMessage = medLineRecord)
         else: 
             pubMedRef = PubMedReference()
@@ -384,8 +384,8 @@ class PubMedAgentMedline (PubMedAgent):
                 elif line.startswith('VI'):
                     pubMedRef.setVolume(value)
 
-                elif line.startswith('AID') and (str.find(line, '[doi]') > 0):
-                    pubMedRef.setDoiID(str.strip(str.split(line, 'AID -')[1].split('[')[0]))
+                elif line.startswith('AID') and (line.find('[doi]') > 0):
+                    pubMedRef.setDoiID(str.strip(line.split('AID -')[1].split('[')[0]))
 
                 elif line.startswith('PT'):
 
@@ -403,8 +403,8 @@ class PubMedAgentMedline (PubMedAgent):
                         else:
                             pubMedRef.setPublicationType(value)
 
-            pubMedRef.setAbstract(str.join(abList))
-            pubMedRef.setAuthors(str.join(auList, '; '))
-            pubMedRef.setTitle(str.join(tiList))
+            pubMedRef.setAbstract(''.join(abList))
+            pubMedRef.setAuthors('; '.join(auList))
+            pubMedRef.setTitle(''.join(tiList))
 
         return pubMedRef
