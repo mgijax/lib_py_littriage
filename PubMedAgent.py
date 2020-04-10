@@ -403,8 +403,8 @@ class PubMedAgentMedline (PubMedAgent):
                         else:
                             pubMedRef.setPublicationType(value)
 
-            pubMedRef.setAbstract(''.join(abList))
+            pubMedRef.setAbstract(' '.join(abList))
             pubMedRef.setAuthors('; '.join(auList))
-            pubMedRef.setTitle(''.join(tiList))
+            pubMedRef.setTitle(' '.join(tiList))
 
         return pubMedRef
