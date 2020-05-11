@@ -33,7 +33,8 @@ def readURL (url):
     # Returns: str.returned
     # Throws: Exception if we have problems reading from 'url'
 
-    stdout = subprocess.getoutput("curl '%s'" % url)
+    stdout = subprocess.run("curl '%s'" % url, shell=True, text=True,
+                                                    capture_output=True).stdout
     return stdout
 
 
