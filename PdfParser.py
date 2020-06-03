@@ -120,6 +120,7 @@ class PdfParser:
 		if not LITPARSER:
 			raise Exception('Must initialize pdfParser library using setLitParserDir()')
 
+                self.stderr = ''
 		cmd = '%s %s' % (LITPARSER, self.pdfPath)
 		try:
 			(stdout, stderr, exitCode) = runCommand.runCommand(cmd)
@@ -129,7 +130,10 @@ class PdfParser:
 
 		# parsing script finished with an error code?
 		if (exitCode != 0):
-			raise Exception('Failed to parse %s' % self.pdfPath)
+                        self.stderr = stderr
+			msg = 'Failed to parse %s\n' % self.pdfPath
+                        msg += 'Stderr from %s:\n%s\n' % (cmd, stderr)
+			raise Exception(msg)
 
 		# parsing was successful, so grab the text and note that we
 		# loaded the file
@@ -137,6 +141,9 @@ class PdfParser:
 		self.fullText = stdout
 		self.loaded = True
 		return
+
+        def getStderr(self):
+                return self.stderr
 
 	def getFirstDoiID (self):
 		# Purpose: return the first DOI ID from the PDF file
