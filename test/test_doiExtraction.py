@@ -67,6 +67,22 @@ class TestDoiExtraction(unittest.TestCase):
         # jci_insight w/ DOI on one line. Should work after 13312 fix.
         self.assertEqual(self._getDoiID('27358912.pdf'),
                                                 '10.1172/jci.insight.85888')
+    def test_sage_just_digits(self):
+        # Sage journal Toxicol Pathol, just digits in doi
+        self.assertEqual(self._getDoiID('5803789_J235853.pdf'),
+                                                '10.1177/0192623312438736')
+    def test_sage_digits_dot(self):
+        # Sage journal J Dent Res, digits in doi followed by '.'
+        self.assertEqual(self._getDoiID('5586774_J213878.pdf'),
+                                                '10.1177/0022034514527971')
+    def test_sage_with_Journal(self):
+        # Sage journal J Dent Res, with "Journal" following digits in doi
+        self.assertEqual(self._getDoiID('5816706_J237759.pdf'),
+                                                '10.1177/0022034515573273')
+    def test_sage_with_JOURNAL(self):
+        # Sage journal J Biol Rhythms, with "JOURNAL" following digits in doi
+        self.assertEqual(self._getDoiID('5792796_J235116.pdf'),
+                                                '10.1177/0748730414561545')
     def test_locked_pdf(self):
         """ test PDF that is password protected so pdftotext won't open it.
             Should get exception and correct stderr msg.
