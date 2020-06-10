@@ -27,6 +27,7 @@ BLOOD_DOI_RE = re.compile('10\.1182/blood([0-9\-\.\s]+)')
 SCIENCE_DOI_RE = re.compile('(10\.1126/[a-zA-Z0-9\-\.]+)')
 
 # regex specifically for recognizing IDs from any 10.1177 journal that contains trailing 'Journal'
+# 10.1177 is Sage publisher: https://us.sagepub.com/en-us/nam/sage-journals
 JOURNAL_DOI_RE = re.compile('(10\.1177/[a-zA-Z0-9\-\.]+)Journal')
 
 # regex specifically for recognizing IDs from any 10.1172/jci. insight
@@ -44,6 +45,7 @@ ACCEPTED_RE = re.compile('accepted', re.IGNORECASE)
 # www.pnas.orgcgidoi10.1073#pnas.0931458100 f
 #\W? match 0 or 1 non-alphanumeric between '10.1073' and 'pnas'
 PNAS_DOI_RE = re.compile('(10\.1073\W?[pnas\.[0-9]+)')
+#          this '[' shouldn't be here ^
 
 # this one matches optional '/' between '10.1073' and 'pnas'
 #PNAS_DOI_RE = re.compile('(10\.1073/*pnas\.[0-9]+)')
@@ -162,10 +164,12 @@ class PdfParser:
 			    	match = PNAS_DOI_RE.search(self.fullText)
 				doiID = match.group(1)
 
-				# may have DCSuppoemental
+				# may have DCSupplemental - TR 13224
 				try:
 					if self.fullText.find('DCSupplemental') >= 0:
 						doiID = match.group(2)
+                                                # there never is a group 2 in RE
+                                                # should always raise exception
 				except:
 					pass
 
@@ -176,6 +180,7 @@ class PdfParser:
 				  	if doiID.find('pnas') == 7: # there is no '/', add one
 						doiID = doiID.replace('10.1073', '10.1073/')
 				   	elif doiID.find('pnas') == 8: # there is a single intervening char
+                                                # jak: this is really rare
 						charToReplace = doiID[7]
 						doiID = doiID.replace(charToReplace, '/')
 				return doiID

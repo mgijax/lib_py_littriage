@@ -68,7 +68,7 @@ class TestDoiExtraction(unittest.TestCase):
         self.assertEqual(self._getDoiID('27358912.pdf'),
                                                 '10.1172/jci.insight.85888')
     def test_sage_just_digits(self):
-        # Sage journal Toxicol Pathol, just digits in doi
+        # Sage journal Toxicol Pathol, just digits in doi. No trailing '.'
         self.assertEqual(self._getDoiID('5803789_J235853.pdf'),
                                                 '10.1177/0192623312438736')
     def test_sage_digits_dot(self):
@@ -79,10 +79,41 @@ class TestDoiExtraction(unittest.TestCase):
         # Sage journal J Dent Res, with "Journal" following digits in doi
         self.assertEqual(self._getDoiID('5816706_J237759.pdf'),
                                                 '10.1177/0022034515573273')
-    def test_sage_with_JOURNAL(self):
-        # Sage journal J Biol Rhythms, with "JOURNAL" following digits in doi
-        self.assertEqual(self._getDoiID('5792796_J235116.pdf'),
-                                                '10.1177/0748730414561545')
+#    def test_sage_with_JOURNAL(self):
+#        # Sage journal J Biol Rhythms, with "JOURNAL" following digits in doi
+#        # not sure how prevalent this case is, may not be worth testing for
+#        self.assertEqual(self._getDoiID('5792796_J235116.pdf'),
+#                                                '10.1177/0748730414561545')
+    def test_PNAS_with_slash(self):
+        # PNAS, has slash
+        self.assertEqual(self._getDoiID('MGI:6388730.pdf'),
+                                                '10.1073/pnas.1915658117')
+    def test_PNAS_no_slash(self):
+        # PNAS, slash is lost in extracted text
+        self.assertEqual(self._getDoiID('MGI:1930716.pdf'),
+                                                '10.1073/pnas.041475098')
+    def test_PNAS_no_slash_trailing_dot(self):
+        # PNAS, no slash. Has trailing '.'
+        self.assertEqual(self._getDoiID('MGI:1334476.pdf'),
+                                                '10.1073/pnas.080517697')
+    def test_PNAS_DCSupplemental(self):
+        # PNAS, with DCSupplemental (TR 13224)
+        self.assertEqual(self._getDoiID('MGI:31666321.pdf'),
+                                                '10.1073/pnas.1902537116')
+    def test_PLOS_nospace(self):
+        # PLOS journal w/ no space in 1st doi occurrance
+        self.assertEqual(self._getDoiID('MGI:6385447.pdf'),
+                                                '10.1371/journal.pone.0224646')
+    def test_PLOS_with_space1(self):
+        # PLOS journal w/ a space in 1st doi occurrance (due to line break)
+        # '10.1371/journal. pone.0226785'
+        self.assertEqual(self._getDoiID('MGI:6385476.pdf'),
+                                                '10.1371/journal.pone.0226785')
+    def test_PLOS_with_space2(self):
+        # PLOS journal w/ a space in 1st doi occurrance (due to line break)
+        # '10.1371/ journal.pone.0226931'
+        self.assertEqual(self._getDoiID('MGI:6385484.pdf'),
+                                                '10.1371/journal.pone.0226931')
     def test_locked_pdf(self):
         """ test PDF that is password protected so pdftotext won't open it.
             Should get exception and correct stderr msg.

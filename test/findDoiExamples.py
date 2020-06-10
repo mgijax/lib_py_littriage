@@ -8,6 +8,11 @@
 #             to be DOI IDs. This way you can browse the different ways
 #             the DOI IDs are formated.
 #
+#  Note, if you are using this to find PDF examples to use as test cases,
+#   you should probably NOT take a PDF from our pdf storage if Nancy has
+#   manually added the doi ID to the PDF. GO back and get the raw PDF from
+#   the publisher instead.
+#
 ###########################################################################
 import sys
 import os
@@ -21,7 +26,7 @@ import db
 
 def getArgs():
     parser = argparse.ArgumentParser( \
-        description='find DOI IDs in extracted text for refs with a given prefix')
+        description='find DOI IDs in extracted text for refs w/ a given prefix')
 
     parser.add_argument('doiPrefix', default=None,
         help="doi ID prefix to find references for. E.g., 10.1177")
@@ -32,7 +37,7 @@ def getArgs():
 
     parser.add_argument('-l', '--limit', dest='limit', action='store',
         required=False, default=100, type=int,
-        help='SQL limit. How many refs to return. Default is 100')
+        help='How many refs to return. Default 100. Use 0 for no limit.')
 
     parser.add_argument('-s', '--server', dest='server', action='store',
         required=False, default='dev',
@@ -61,14 +66,14 @@ args = getArgs()
 SQLSEPARATOR = '||'
 QUERY =  \
 '''
-select a.accid doi, a2.accid pubmed, r.year, r.journal, bd.extractedtext
+select a.accid doi, a2.accid mgiid, r.year, r.journal, bd.extractedtext
 from bib_refs r join bib_workflow_data bd on
             (r._refs_key = bd._refs_key and bd._extractedtext_key = 48804490)
      join acc_accession a on
 	 (a._object_key = r._refs_key and a._logicaldb_key=65 -- doi
 	  and a._mgitype_key=1 )
      join acc_accession a2 on
-	 (a2._object_key = r._refs_key and a2._logicaldb_key=29 -- pubmed
+	 (a2._object_key = r._refs_key and a2._logicaldb_key=1 -- mgi
 	  and a2._mgitype_key=1 )
 where
 bd.haspdf=1
@@ -80,7 +85,8 @@ and a.accid like '%s%%'
 if args.year:
     QUERY += "and r.year = %s\n" % args.year
 
-QUERY += "limit %d\n" % args.limit
+if args.limit:
+    QUERY += "limit %d\n" % args.limit
 
 
 regex = args.doiPrefix.replace('.', r'\.')      # escape any '.'s
@@ -103,15 +109,19 @@ def main ():
 
     for i,r in enumerate(results[-1]):
         doi     = r['doi']
-        pubmed  = r['pubmed']
+        mgiid   = r['mgiid']
         year    = r['year']
 	journal = r['journal']
         extText = r['extractedtext']
-        print('\nArticle %s %s %s %s:' % (pubmed, doi, year, journal, ))
+        print('\nArticle %s %s %s %s:' % (mgiid, doi, year, journal, ))
         for j,m in enumerate(doi_re.finditer(extText)): # 1st few id occurrances
             pos = m.start()
-            print("ID %d: '%s'" % (j, extText[pos:pos+31]))
-            if j > 3: break
+            if pos < 10:        # DOI at start of ext text
+                manual_ID = '*' # probably manually entered
+            else:
+                manual_ID = ''
+            print("ID %d%s: '%s'" % (j, manual_ID, extText[pos:pos+51]))
+            if j > 2: break
 
 # end main() ----------------------------------
 
