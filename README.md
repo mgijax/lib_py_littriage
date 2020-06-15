@@ -41,13 +41,15 @@ if you want it as an example.
 
 For example, `findDoiExamples.py 10.1073` prints snippets of extracted text
 that contain DIO IDs from PNAS articles. This lets you find examples of the 
-different ways DOI IDs may be formatted in PNAS.
+different ways DOI IDs may be formatted in PNAS. (Note this script is looking
+at the extracted text in the database, not any pdfs.)
 
-When looking for examples, beware that Nancy has manually added the DOI ID at
+When looking for examples, be aware that Nancy has manually added the DOI ID at
 the beginning of some pdfs (and thus to our extracted text). So the pdfs in our
 storage may not always be the same as the raw pdf from the journal/publisher.
 
-See `findDoiExamples.py -h` for various options.
+See `findDoiExamples.py -h` for various options
+(e.g., look by publication year).
 
 ### testPMA_getPubMedIDs.py
 Is an adhoc test that exercises PubMedAgent.getPubMedIDs() in PubMedAgent.py
