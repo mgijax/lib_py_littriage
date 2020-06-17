@@ -74,7 +74,7 @@ from bib_refs r join bib_workflow_data bd on
 	  and a._mgitype_key=1 )
      join acc_accession a2 on
 	 (a2._object_key = r._refs_key and a2._logicaldb_key=1 -- mgi
-	  and a2._mgitype_key=1 )
+	  and a2._mgitype_key=1 and a2.prefixpart='MGI:' )
 where
 bd.haspdf=1
 and bd.extractedtext is not Null        -- ensure we're finding refs w/
