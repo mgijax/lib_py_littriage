@@ -203,6 +203,24 @@ class TestDoiExtraction(unittest.TestCase):
         # 6/26/2020: currently errors since code expects 'doi.org/'
         self.assertEqual(self._getDoiID('MGI_5823517.pdf'),
                                                 '10.1530/REP-16-0231')
+    def test_ASM_no_breaks(self):       # Amer Soc for Microbiology
+        # J Virol: no line break or space in 1st doi: '10.1128/JVI.01806-18.'
+        # (but trailing '.')
+        self.assertEqual(self._getDoiID('MGI_6286560.pdf'),
+                                                '10.1128/JVI.01806-18')
+    def test_ASM_break1(self):       # Amer Soc for Microbiology
+        # J Virol: line break in 1st doi: '10.1128/JVI\n.01173-18.'
+        # (but trailing '.')
+        # 6/26/2020: currently fails as pdftotext inserts ' ' instead of '\n'
+        #   and code is only handling '\n'
+        self.assertEqual(self._getDoiID('MGI_6342319.pdf'),
+                                                '10.1128/JVI.01173-18')
+    def test_ASM_break2(self):       # Amer Soc for Microbiology
+        # mBio: line break in 1st doi: '10.1128/\nmBio.01065-19'
+        # (but trailing '.')
+        # 6/26/2020: probably is matching 2nd DOI in the PDF which is correct
+        self.assertEqual(self._getDoiID('MGI_6391745.pdf'),
+                                                '10.1128/mBio.01065-19')
     def test_locked_pdf(self):
         """ test PDF that is password protected so pdftotext won't open it.
             Should get exception and correct stderr msg.
