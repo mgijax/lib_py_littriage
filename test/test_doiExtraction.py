@@ -69,7 +69,7 @@ class TestDoiExtraction(unittest.TestCase):
                                                 '10.1172/jci.insight.95456')
     def test_jci_insight_nosplit(self):
         # jci_insight w/ DOI on one line: '10.1172/jci.insight.85888'
-        # Should work after TR 13312 fix.
+        # currently errors: Should work after TR 13312 fix.
         self.assertEqual(self._getDoiID('27358912.pdf'),
                                                 '10.1172/jci.insight.85888')
     def test_sage_just_digits(self):
@@ -189,6 +189,20 @@ class TestDoiExtraction(unittest.TestCase):
         # but has link to related article DOI before this article DOI.
         self.assertEqual(self._getDoiID('MGI_6304117.pdf'),
                                                 '10.7554/eLife.46279')
+    def test_Reproduction_no_spaces(self):
+        # Reproduction, no spaces in the 1st ID: '10.1530/REP-19-0022'
+        self.assertEqual(self._getDoiID('MGI_6392665.pdf'),
+                                                '10.1530/REP-19-0022')
+    def test_Reproduction_spaces(self):
+        # Reproduction, spaces in the 1st ID: '10.1530/REP -18-0366'
+        self.assertEqual(self._getDoiID('MGI_6393822.pdf'),
+                                                '10.1530/REP-18-0366')
+    def test_Reproduction_older_paper(self):
+        # Reproduction, no spaces in the 1st ID, but older, no 'doi.org/':
+        # 'DOI: 10.1530/REP-16-0231'
+        # 6/26/2020: currently errors since code expects 'doi.org/'
+        self.assertEqual(self._getDoiID('MGI_5823517.pdf'),
+                                                '10.1530/REP-16-0231')
     def test_locked_pdf(self):
         """ test PDF that is password protected so pdftotext won't open it.
             Should get exception and correct stderr msg.
