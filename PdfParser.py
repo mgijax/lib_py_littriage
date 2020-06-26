@@ -22,6 +22,18 @@ DOI_RE = re.compile('(10\.[0-9\.]+/[^ \t;]+)')
 
 # regex specifically for recognizing IDs from Blood journal
 BLOOD_DOI_RE = re.compile('10\.1182/blood([0-9\-\.\s]+)')
+# (6/25/2020) Note Blood has at least two types of articles, full articles
+#  e.g., MGI:6284584 and "comment" (or short?) artcles like MGI:6284578.
+# In the comment articles, the PDF for an article often contains the tail
+#   end of a previous article in the issue, and may contain the beginning
+#   of the the next article, full articles. These tail/beginning parts of
+#   the surrounding articles may contain their own DOI IDs.
+#   So it is easy to get the wrong (but valid!) DOI ID.
+# It appears that in our download files, there is a download page at the end
+#  that contains the correct DOI ID. Probably should change the logic to get
+#  that ID from the PDF  (should consider what happens with supp data, haven't
+#  looked for examples of that)
+# See TR12755.
 
 # regex specifically for recognizing IDs from Science journals
 SCIENCE_DOI_RE = re.compile('(10\.1126/[a-zA-Z0-9\-\.]+)')
@@ -225,8 +237,11 @@ class PdfParser:
 							slash = doiID.find('/')
 							nl = doiID.find('\n')
 
-				# special case for Molecular and Cellular Biology journal, which has DOI IDs
-				# from 20 to 32 characters -- but which are often interrupted by line breaks
+				# special case for Journals from American Society for Microbiology (ASM)
+                                # includes Molecular and Cellular Biology
+                                # (also J Virol, MBio (mBio?), Infec Immun)
+                                # These have DOI IDs from 20 to 32 characters
+                                #   -- but which are often interrupted by line breaks
 				# in their new (circa late-2016) PDF format.  As a workaround for the most
 				# common case, remove any newlines within the first 20 characters of the ID.
 				
@@ -259,6 +274,9 @@ class PdfParser:
 				# if this is a Blood DOI ID, 
 				# the hypenation sometimes needs tweaking
 				# may contain a '.' or a ' '
+                                # Note: Blood really needs better logic, often
+                                #  the 1st doiID is for the paper in the PDF.
+                                #  Should probably grab last doiID like Science.
 				if doiID.startswith('10.1182/blood'):
 					match = BLOOD_DOI_RE.search(self.fullText)
 					doiID = match.group(0)
@@ -275,6 +293,8 @@ class PdfParser:
 
 				if doiID.startswith('10.1530/REP'):
 					match = REP_DOI_RE.search(self.fullText)
+                                        # 6/26/2020: this errors on older papers
+                                        #   now that don't have 'doi.org/'
 					doiID = match.group(0)
 					doiID = doiID.replace('doi.org/', '')
 					doiID = doiID.replace(' ', '')
@@ -288,6 +308,12 @@ class PdfParser:
 				# if this is a Science DOI ID, we instead need
 				# to find and return the last DOI ID for the
 				# PDF file.
+                                # scitranslmed is from the same publisher (like
+                                #   scisignal) but is not handled here.
+                                # I haven't found any examples in
+                                #   our db from scitranslmed or scisignal where
+                                #   the 1st doi is the wrong one (haven't looked
+                                #   too hard either)
 				if doiID.startswith('10.1126/science') or \
 					doiID.startswith('10.1126/scisignal'):
 				        doiID =  self._getScienceID()
