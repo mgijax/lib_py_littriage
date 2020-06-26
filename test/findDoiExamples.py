@@ -39,6 +39,14 @@ def getArgs():
         required=False, default=100, type=int,
         help='How many refs to return. Default 100. Use 0 for no limit.')
 
+    parser.add_argument('-p', '--predoi', dest='preDOI', action='store',
+        required=False, default=0, type=int,
+        help='num chars before DOI to display. Default=0')
+
+    parser.add_argument('--postdoi', dest='postDOI', action='store',
+        required=False, default=51, type=int,
+        help='num chars after start of DOI to display. Default=51')
+
     parser.add_argument('-s', '--server', dest='server', action='store',
         required=False, default='dev',
         help='db server: adhoc, prod, or dev (default)')
@@ -116,11 +124,14 @@ def main ():
         print('\nArticle %s %s %s %s:' % (mgiid, doi, year, journal, ))
         for j,m in enumerate(doi_re.finditer(extText)): # 1st few id occurrances
             pos = m.start()
-            if pos < 10:        # DOI at start of ext text
+            if pos < 20:        # DOI at start of ext text
                 manual_ID = '*' # probably manually entered
             else:
                 manual_ID = ''
-            print("ID %d%s: '%s'" % (j, manual_ID, extText[pos:pos+51]))
+            preChars = min(args.preDOI, pos)
+            s = pos - preChars
+            e = pos + args.postDOI
+            print("ID %d%s: '%s'" % (j, manual_ID, extText[s:e]))
             if j > 2: break
 
 # end main() ----------------------------------
