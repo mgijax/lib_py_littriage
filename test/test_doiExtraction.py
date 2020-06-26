@@ -15,6 +15,10 @@ One test_xxx() method per pdf. Try to cover all the individual cases
     for each journal that has special handling and any other weird cases.
     PDF files live in the pdfs/ subdirectory.
 
+    PDF file naming note: many are named after the MGI ID of the reference but
+        with "MGI_nnnnnn" format (instead of ":"). I found the ":" in the file
+        names messed up bash's file completion mechanism.
+
     The test methods, in effect, also describe the individual pdf files.
 
 When running this, be careful of these environment variables:
@@ -65,7 +69,7 @@ class TestDoiExtraction(unittest.TestCase):
                                                 '10.1172/jci.insight.95456')
     def test_jci_insight_nosplit(self):
         # jci_insight w/ DOI on one line: '10.1172/jci.insight.85888'
-        # Should work after 13312 fix.
+        # Should work after TR 13312 fix.
         self.assertEqual(self._getDoiID('27358912.pdf'),
                                                 '10.1172/jci.insight.85888')
     def test_sage_just_digits(self):
@@ -123,6 +127,68 @@ class TestDoiExtraction(unittest.TestCase):
         #      '10.1371/ journal.pone.0226931'
         self.assertEqual(self._getDoiID('MGI_6385484.pdf'),
                                                 '10.1371/journal.pone.0226931')
+    def test_Science_1st_DOI_ok(self):
+        # Science w/ 1st doi occurrance actually ok: '10.1126/science.1179438'
+        #   (plus intervening other DOI's in text & has supp data)
+        self.assertEqual(self._getDoiID('MGI_4417979.pdf'),
+                                                '10.1126/science.1179438')
+    def test_Science_1st_DOI_ok2(self):
+        # Science (recent 2019) '10.1126/science.aav0581'
+        #   (plus intervening other DOI's in text & has supp data)
+        self.assertEqual(self._getDoiID('MGI_6280790.pdf'),
+                                                '10.1126/science.aav0581')
+    def test_Science_1st_not_ok(self):
+        # Science w/ 1st doi wrong: '10.1126/science.1179802'
+        #  correct: '10.1126/science.1180067' appears later
+        #   (plus intervening other DOI's in text & has supp data)
+        self.assertEqual(self._getDoiID('MGI_4429730.pdf'),
+                                                '10.1126/science.1180067')
+    def test_Sci_Signal(self):
+        # Sci Signal w/ good ID multiple times: '10.1126/scisignal.aah4598'
+        self.assertEqual(self._getDoiID('MGI_5913802.pdf'),
+                                                '10.1126/scisignal.aah4598')
+    def test_Blood_reg_article1(self):
+        # Blood, regular article. 1st ID instance is split
+        # '10.1182/\nblood-2018-05-851667.' and has trailing '.'
+        self.assertEqual(self._getDoiID('MGI_6284584.pdf'),
+                                                '10.1182/blood-2018-05-851667')
+    def test_Blood_reg_article2(self):
+        # Blood, regular article. Needs hyphenation cleanup from extracted text
+        # Appears in ext text as: '10.1182/blood2018-07-861237.'
+        # 6/25/2020: currently fails, doesn't fix hyphenation
+        self.assertEqual(self._getDoiID('MGI_6284913.pdf'),
+                                                '10.1182/blood-2018-07-861237')
+    def test_Blood_reg_article3(self):
+        # Blood, regular article. Needs hyphenation cleanup from extracted text
+        # Appears in ext text as: '10.1182/blood-201807-864538.'
+        # 6/25/2020: currently fails, doesn't fix hyphenation
+        self.assertEqual(self._getDoiID('MGI_6306196.pdf'),
+                                                '10.1182/blood-2018-07-864538')
+    def test_Blood_comment_article1(self):
+        # Blood, comment article. 1st ID instance is for previous paper in PDF
+        # '10.1182/blood-2018-12-891481' 
+        # 6/25/2020: currently this fails as it gets the above ID.
+        # This reference has been deleted from the db.
+        self.assertEqual(self._getDoiID('MGI_6284574.pdf'),
+                                                '10.1182/blood-2018-12-889758')
+    def test_Blood_comment_article2(self):
+        # Blood, comment article. This is 1st comment article (so no prev one)
+        # ID is clean, not split, not missing any chars.
+        self.assertEqual(self._getDoiID('MGI_6284696.pdf'),
+                                                '10.1182/blood-2018-12-889766')
+    def test_eLife_extra_digits(self):
+        # eLife, 1st doi has extra digits: '10.7554/eLife.41156.001'
+        self.assertEqual(self._getDoiID('MGI_6304063.pdf'),
+                                                '10.7554/eLife.41156')
+    def test_eLife_no_extra_digits(self):
+        # eLife, 1st doi has no extra digits: '10.7554/eLife.47985'
+        self.assertEqual(self._getDoiID('MGI_6304087.pdf'),
+                                                '10.7554/eLife.47985')
+    def test_eLife_no_extra_digits_but(self):
+        # eLife, 1st doi has no extra digits: '10.7554/eLife.46279'
+        # but has link to related article DOI before this article DOI.
+        self.assertEqual(self._getDoiID('MGI_6304117.pdf'),
+                                                '10.7554/eLife.46279')
     def test_locked_pdf(self):
         """ test PDF that is password protected so pdftotext won't open it.
             Should get exception and correct stderr msg.
