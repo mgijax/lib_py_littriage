@@ -63,6 +63,10 @@ class TestDoiExtraction(unittest.TestCase):
     ###########################
     # Tests
     ###########################
+    def test_nothing_special(self):
+        # paper from a journal (Sci Rep) that has no special handling
+        self.assertEqual(self._getDoiID('MGI_6387549.pdf'),
+                                                '10.1038/s41598-019-47790-5')
     def test_jci_insight_splitID(self):
         # jci_insight w/ DOI split across lines: '10.1172/jci.\ninsight.95456'
         self.assertEqual(self._getDoiID('6407572_J287562.pdf'),
@@ -205,7 +209,7 @@ class TestDoiExtraction(unittest.TestCase):
         # Blood Advances, 'DOI 10.1182/\nbloodadvances.2019000605.'
         # These IDs only occur once in the pdf, and have a line break after
         #    1st '/', so they are not found. Pretty rare journal, maybe not
-        #    worth dealing with.
+        #    worth worrying about.
         self.assertEqual(self._getDoiID('MGI_6358993.pdf'),
                                             '10.1182/bloodadvances.2019000605')
     def test_eLife_extra_digits(self):
