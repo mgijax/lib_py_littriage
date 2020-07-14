@@ -17,7 +17,7 @@ One test_xxx() method per pdf. Try to cover all the individual cases
 
     PDF file naming note: many are named after the MGI ID of the reference but
         with "MGI_nnnnnn" format (instead of ":"). I found the ":" in the file
-        names messed up bash's file completion mechanism.
+        names messed up bash's filename completion mechanism.
 
     The test methods, in effect, also describe the individual pdf files.
 
@@ -69,7 +69,7 @@ class TestDoiExtraction(unittest.TestCase):
                                                 '10.1172/jci.insight.95456')
     def test_jci_insight_nosplit(self):
         # jci_insight w/ DOI on one line: '10.1172/jci.insight.85888'
-        # currently errors: Should work after TR 13312 fix.
+        # Should work after TR 13312 fix.
         self.assertEqual(self._getDoiID('27358912.pdf'),
                                                 '10.1172/jci.insight.85888')
     def test_sage_just_digits(self):
@@ -103,8 +103,6 @@ class TestDoiExtraction(unittest.TestCase):
                                                 '10.1073/pnas.041475098')
     def test_PNAS_no_slash_trailing_dot(self):
         # PNAS, no slash. Has trailing '.':  '10.1073pnas.080517697.'
-        # 6/10/2020: stripping trailing '.' doesn't seem to be handled anymore,
-        #            so this test fails.
         self.assertEqual(self._getDoiID('MGI_1334476.pdf'),
                                                 '10.1073/pnas.080517697')
     def test_PNAS_DCSupplemental(self):
@@ -147,35 +145,69 @@ class TestDoiExtraction(unittest.TestCase):
         # Sci Signal w/ good ID multiple times: '10.1126/scisignal.aah4598'
         self.assertEqual(self._getDoiID('MGI_5913802.pdf'),
                                                 '10.1126/scisignal.aah4598')
-    def test_Blood_reg_article1(self):
+    def test_Blood_article_hyphen1(self):
         # Blood, regular article. 1st ID instance is split
-        # '10.1182/\nblood-2018-05-851667.' and has trailing '.'
+        # 1st DOI as: '10.1182/\nblood-2018-05-851667.' and has trailing '.'
         self.assertEqual(self._getDoiID('MGI_6284584.pdf'),
                                                 '10.1182/blood-2018-05-851667')
-    def test_Blood_reg_article2(self):
+    def test_Blood_article_hyphen2(self):
         # Blood, regular article. Needs hyphenation cleanup from extracted text
-        # Appears in ext text as: '10.1182/blood2018-07-861237.'
-        # 6/25/2020: currently fails, doesn't fix hyphenation
+        # 1st DOI as: '10.1182/blood2018-07-861237.'
+        # 7/13/2020: fixed this by removing trailing '.' before fixing hyphens
         self.assertEqual(self._getDoiID('MGI_6284913.pdf'),
                                                 '10.1182/blood-2018-07-861237')
-    def test_Blood_reg_article3(self):
+    def test_Blood_article_hyphen3(self):
         # Blood, regular article. Needs hyphenation cleanup from extracted text
-        # Appears in ext text as: '10.1182/blood-201807-864538.'
-        # 6/25/2020: currently fails, doesn't fix hyphenation
+        # 1st DOI as: '10.1182/blood-201807-864538.'
+        # 7/13/2020: fixed this by removing trailing '.' before fixing hyphens
         self.assertEqual(self._getDoiID('MGI_6306196.pdf'),
                                                 '10.1182/blood-2018-07-864538')
-    def test_Blood_comment_article1(self):
+    def test_Blood_article_dot1(self):
+        # Blood, regular article. DOI w/ '.', no '-', w/ trailing '.'
+        # 1st DOI as: '10.1182/\nblood.2018889931.'  - not matched
+        #   instead matches (correct) doi on the "download" page
+        self.assertEqual(self._getDoiID('MGI_6314880.pdf'),
+                                                '10.1182/blood.2018889931')
+    def test_Blood_article_dot2(self):
+        # Blood, regular article. DOI w/ '.', no '-', w/ trailing '.'
+        # 1st DOI as: '10.1182/blood.\n2019000578.'
+        # Note this pdf does not have a "download" page with the doi ID.
+        self.assertEqual(self._getDoiID('MGI_6367457.pdf'),
+                                                '10.1182/blood.2019000578')
+    def test_Blood_comment_hyphen0(self):
+        # Blood, comment article. This is 1st comment article (so no prev one)
+        # ID is clean, not split, not missing any chars.
+        self.assertEqual(self._getDoiID('MGI_6284696.pdf'),
+                                                '10.1182/blood-2018-12-889766')
+    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
+    def test_Blood_comment_hyphen1(self):
         # Blood, comment article. 1st ID instance is for previous paper in PDF
         # '10.1182/blood-2018-12-891481' 
         # 6/25/2020: currently this fails as it gets the above ID.
         # This reference has been deleted from the db.
         self.assertEqual(self._getDoiID('MGI_6284574.pdf'),
                                                 '10.1182/blood-2018-12-889758')
-    def test_Blood_comment_article2(self):
-        # Blood, comment article. This is 1st comment article (so no prev one)
-        # ID is clean, not split, not missing any chars.
-        self.assertEqual(self._getDoiID('MGI_6284696.pdf'),
-                                                '10.1182/blood-2018-12-889766')
+    def test_Blood_comment_dot0(self):
+        # Blood, comment article. DOI w/ '.', no breaks or '-', no trailing '.'
+        # Only one DOI in the PDF: '10.1182/blood.2019002423'
+        self.assertEqual(self._getDoiID('MGI_6364267.pdf'),
+                                                '10.1182/blood.2019002423')
+    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
+    def test_Blood_comment_dot1(self):
+        # Blood, comment article. DOI w/ '.', no '-', w/ no trailing '.'
+        # 1st DOI is from previous article 'DOI 10.1182/blood.2019004314'
+        # 7/1/2020: currently this fails as it gets the above ID.
+        # Note this pdf does not have a "download" page with the doi ID.
+        self.assertEqual(self._getDoiID('MGI_6392736.pdf'),
+                                                '10.1182/blood.2019004603')
+    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
+    def test_BloodAdvances_article1(self):
+        # Blood Advances, 'DOI 10.1182/\nbloodadvances.2019000605.'
+        # These IDs only occur once in the pdf, and have a line break after
+        #    1st '/', so they are not found. Pretty rare journal, maybe not
+        #    worth dealing with.
+        self.assertEqual(self._getDoiID('MGI_6358993.pdf'),
+                                            '10.1182/bloodadvances.2019000605')
     def test_eLife_extra_digits(self):
         # eLife, 1st doi has extra digits: '10.7554/eLife.41156.001'
         self.assertEqual(self._getDoiID('MGI_6304063.pdf'),
@@ -200,7 +232,6 @@ class TestDoiExtraction(unittest.TestCase):
     def test_Reproduction_older_paper(self):
         # Reproduction, no spaces in the 1st ID, but older, no 'doi.org/':
         # 'DOI: 10.1530/REP-16-0231'
-        # 6/26/2020: currently errors since code expects 'doi.org/'
         self.assertEqual(self._getDoiID('MGI_5823517.pdf'),
                                                 '10.1530/REP-16-0231')
     def test_ASM_no_breaks(self):       # Amer Soc for Microbiology
@@ -208,6 +239,7 @@ class TestDoiExtraction(unittest.TestCase):
         # (but trailing '.')
         self.assertEqual(self._getDoiID('MGI_6286560.pdf'),
                                                 '10.1128/JVI.01806-18')
+    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
     def test_ASM_break1(self):       # Amer Soc for Microbiology
         # J Virol: line break in 1st doi: '10.1128/JVI\n.01173-18.'
         # (but trailing '.')
