@@ -168,10 +168,10 @@ class TestDoiExtraction(unittest.TestCase):
                                                 '10.1182/blood-2018-07-864538')
     def test_Blood_article_dot1(self):
         # Blood, regular article. DOI w/ '.', no '-', w/ trailing '.'
-        # 1st DOI as: '10.1182/\nblood.2018889931.'  - not matched
+        # 1st DOI as: '10.1182/\nblood.2019000437.'  - not matched
         #   instead matches (correct) doi on the "download" page
-        self.assertEqual(self._getDoiID('MGI_6314880.pdf'),
-                                                '10.1182/blood.2018889931')
+        self.assertEqual(self._getDoiID('MGI_6315037.pdf'),
+                                                '10.1182/blood.2019000437')
     def test_Blood_article_dot2(self):
         # Blood, regular article. DOI w/ '.', no '-', w/ trailing '.'
         # 1st DOI as: '10.1182/blood.\n2019000578.'
