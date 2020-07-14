@@ -96,8 +96,8 @@ if args.year:
 if args.limit:
     QUERY += "limit %d\n" % args.limit
 
-
 regex = args.doiPrefix.replace('.', r'\.')      # escape any '.'s
+regex = regex.replace('/', r'/[\s]?')           # optional space after /
 doi_re = re.compile(regex)
 
 def main ():
