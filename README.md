@@ -51,6 +51,18 @@ storage may not always be the same as the raw pdf from the journal/publisher.
 See `findDoiExamples.py -h` for various options
 (e.g., look by publication year).
 
+### doiRetry.py
+
+`doiRetry.py` re-extracts DOI IDs for papers already in the db and compares
+those IDs with the DOI ID for each paper in the accession table.
+
+You can use this to test how changes to PdfParser.py would affect papers whose
+DOI IDs we already know.
+
+`doiRetry.py -h` gives you many different options. One option uses the extracted
+text that is already stored in the db (this is fast), another option uses
+pdftotext to re-extract the text from PDFs stored in our pdf storage (slow).
+
 ### testPMA_getPubMedIDs.py
 Is an adhoc test that exercises PubMedAgent.getPubMedIDs() in PubMedAgent.py
 
