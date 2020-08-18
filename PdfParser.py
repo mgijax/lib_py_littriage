@@ -357,7 +357,7 @@ class PdfParser:
                 cmd = [ LITPARSER, self.pdfPath ]
                 cmdText = ' '.join(cmd)
                 try:
-                        completedProcess = subprocess.run(cmd,
+                        completedProcess = subprocess.run(cmd, text=True,
                                                             capture_output=True)
                 except: # error in attempting to execute parsing script
                         raise Exception('Failed to execute: %s' % cmdText)
