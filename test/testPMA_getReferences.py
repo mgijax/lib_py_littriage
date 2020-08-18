@@ -1,8 +1,7 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
-import string
 import PubMedAgent
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 #
 # Test PubMedAgent.getReferences(doiList)
@@ -22,30 +21,30 @@ doiList = ['10.1038/sj.bjc.6690123', '1.1038/sj.bjc.6690123', '3kjab093cdejah5r'
 # test getReferences function
 pma = PubMedAgent.PubMedAgentMedline()
 mapping = pma.getReferences(doiList)
-print 'mapping: %s' % mapping
+print('mapping: %s' % mapping)
 #print 'type(mapping): %s' % type(mapping)
-print 'iterating over pubMed IDs'
+print('iterating over pubMed IDs')
 for doiID in mapping:
-	print 'doiID: %s' % doiID
-	refObjectList = mapping[doiID]
-	if refObjectList == [None]:
-                print '\nno pmID found for doiID: %s' % doiID
-		continue
-	for refObject in refObjectList:
-	    if refObject != None:
-		print '\n\ndoiID: %s' % doiID
-		print 'refObject.getPubMedID(): %s' % refObject.getPubMedID()
-		print 'refObject.getDoiID(): %s' % refObject.getDoiID()
-		print 'refObject.isValid(): %s' % refObject.isValid()
-		if not refObject.isValid():
-		    print 'refObject.getErrorMessage(): %s' % refObject.getErrorMessage()
-		print 'refObject.getTitle(): %s' % refObject.getTitle()
-		print 'refObject.getAuthors(): %s' % refObject.getAuthors()
-		print 'refObject.getJournal(): %s' % refObject.getJournal()
-		print 'refObject.getDate(): %s' % refObject.getDate()
-		print 'refObject.getYear(): %s' % refObject.getYear()
-		print 'refObject.getIssue(): %s' % refObject.getIssue()
-		print 'refObject.getPages(): %s' % refObject.getPages()
-		print 'refObject.getAbstract(): %s' % refObject.getAbstract()
-		print 'refObject.getVolume(): %s' % refObject.getVolume()
-		print 'refObject.getPrimaryAuthor(): %s' % refObject.getPrimaryAuthor()
+        print('doiID: %s' % doiID)
+        refObjectList = mapping[doiID]
+        if refObjectList == [None]:
+                print('\nno pmID found for doiID: %s' % doiID)
+                continue
+        for refObject in refObjectList:
+            if refObject != None:
+                print('\n\ndoiID: %s' % doiID)
+                print('refObject.getPubMedID(): %s' % refObject.getPubMedID())
+                print('refObject.getDoiID(): %s' % refObject.getDoiID())
+                print('refObject.isValid(): %s' % refObject.isValid())
+                if not refObject.isValid():
+                    print('refObject.getErrorMessage(): %s' % refObject.getErrorMessage())
+                print('refObject.getTitle(): %s' % refObject.getTitle())
+                print('refObject.getAuthors(): %s' % refObject.getAuthors())
+                print('refObject.getJournal(): %s' % refObject.getJournal())
+                print('refObject.getDate(): %s' % refObject.getDate())
+                print('refObject.getYear(): %s' % refObject.getYear())
+                print('refObject.getIssue(): %s' % refObject.getIssue())
+                print('refObject.getPages(): %s' % refObject.getPages())
+                print('refObject.getAbstract(): %s' % refObject.getAbstract())
+                print('refObject.getVolume(): %s' % refObject.getVolume())
+                print('refObject.getPrimaryAuthor(): %s' % refObject.getPrimaryAuthor())

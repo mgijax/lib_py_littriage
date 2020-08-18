@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 # Name: getDOI.py
 # Purpose: Extract the DOI ID for the specified paper and write it to stdout

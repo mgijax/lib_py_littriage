@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 #
 #  Purpose: Find example references for different flavors of DOI handling
@@ -16,7 +16,6 @@
 ###########################################################################
 import sys
 import os
-import string
 import time
 import argparse
 import re
@@ -57,14 +56,14 @@ def getArgs():
     args =  parser.parse_args()
 
     if args.server == 'adhoc':
-	args.host = 'mgi-adhoc.jax.org'
-	args.db = 'mgd'
+        args.host = 'mgi-adhoc.jax.org'
+        args.db = 'mgd'
     if args.server == 'prod':
-	args.host = 'bhmgidb01'
-	args.db = 'prod'
+        args.host = 'bhmgidb01'
+        args.db = 'prod'
     if args.server == 'dev':
-	args.host = 'bhmgidevdb01'
-	args.db = 'prod'
+        args.host = 'bhmgidevdb01'
+        args.db = 'prod'
 
     return args
 ###################################
@@ -78,11 +77,11 @@ select a.accid doi, a2.accid mgiid, r.year, r.journal, bd.extractedtext
 from bib_refs r join bib_workflow_data bd on
             (r._refs_key = bd._refs_key and bd._extractedtext_key = 48804490)
      join acc_accession a on
-	 (a._object_key = r._refs_key and a._logicaldb_key=65 -- doi
-	  and a._mgitype_key=1 )
+         (a._object_key = r._refs_key and a._logicaldb_key=65 -- doi
+          and a._mgitype_key=1 )
      join acc_accession a2 on
-	 (a2._object_key = r._refs_key and a2._logicaldb_key=1 -- mgi
-	  and a2._mgitype_key=1 and a2.prefixpart='MGI:' )
+         (a2._object_key = r._refs_key and a2._logicaldb_key=1 -- mgi
+          and a2._mgitype_key=1 and a2.prefixpart='MGI:' )
 where
 bd.haspdf=1
 and bd.extractedtext is not Null        -- ensure we're finding refs w/
@@ -108,7 +107,7 @@ def main ():
 
     verbose( "Hitting database %s %s as mgd_public\n\n" % (args.host, args.db))
 
-    queries = string.split(QUERY, SQLSEPARATOR)
+    queries = QUERY.split(SQLSEPARATOR)
 
     startTime = time.time()
     results = db.sql( queries, 'auto')
@@ -119,7 +118,7 @@ def main ():
         doi     = r['doi']
         mgiid   = r['mgiid']
         year    = r['year']
-	journal = r['journal']
+        journal = r['journal']
         extText = r['extractedtext']
         print('\nArticle %s %s %s %s:' % (mgiid, doi, year, journal, ))
         for j,m in enumerate(doi_re.finditer(extText)): # 1st few id occurrances

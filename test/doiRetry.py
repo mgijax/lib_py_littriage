@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 """
 Name: doiRetry.py
@@ -33,7 +33,6 @@ Process:
 ###########################################################################
 import sys
 import os
-import string
 import time
 import traceback
 import argparse
@@ -95,14 +94,14 @@ def getArgs():
     args =  parser.parse_args()
 
     if args.server == 'adhoc':
-	args.host = 'mgi-adhoc.jax.org'
-	args.db = 'mgd'
+        args.host = 'mgi-adhoc.jax.org'
+        args.db = 'mgd'
     if args.server == 'prod':
-	args.host = 'bhmgidb01'
-	args.db = 'prod'
+        args.host = 'bhmgidb01'
+        args.db = 'prod'
     if args.server == 'dev':
-	args.host = 'bhmgidevdb01'
-	args.db = 'prod'
+        args.host = 'bhmgidevdb01'
+        args.db = 'prod'
 
     return args
 ###################################
@@ -197,7 +196,7 @@ def main ():
         mgiID         = r['mgiid']
         year          = str(r['year'])
         r_creation_date = r['r_creation_date']
-	journal       = r['journal']
+        journal       = r['journal']
 
         if i % 50 == 0: verbose("%d..." % i)
 

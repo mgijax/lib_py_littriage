@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 
 import sys
 import unittest
@@ -183,7 +183,7 @@ class TestDoiExtraction(unittest.TestCase):
         # ID is clean, not split, not missing any chars.
         self.assertEqual(self._getDoiID('MGI_6284696.pdf'),
                                                 '10.1182/blood-2018-12-889766')
-    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
+    @unittest.expectedFailure
     def test_Blood_comment_hyphen1(self):
         # Blood, comment article. 1st ID instance is for previous paper in PDF
         # '10.1182/blood-2018-12-891481' 
@@ -196,7 +196,7 @@ class TestDoiExtraction(unittest.TestCase):
         # Only one DOI in the PDF: '10.1182/blood.2019002423'
         self.assertEqual(self._getDoiID('MGI_6364267.pdf'),
                                                 '10.1182/blood.2019002423')
-    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
+    @unittest.expectedFailure
     def test_Blood_comment_dot1(self):
         # Blood, comment article. DOI w/ '.', no '-', w/ no trailing '.'
         # 1st DOI is from previous article 'DOI 10.1182/blood.2019004314'
@@ -204,7 +204,7 @@ class TestDoiExtraction(unittest.TestCase):
         # Note this pdf does not have a "download" page with the doi ID.
         self.assertEqual(self._getDoiID('MGI_6392736.pdf'),
                                                 '10.1182/blood.2019004603')
-    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
+    @unittest.expectedFailure
     def test_BloodAdvances_article1(self):
         # Blood Advances, 'DOI 10.1182/\nbloodadvances.2019000605.'
         # These IDs only occur once in the pdf, and have a line break after
@@ -243,7 +243,7 @@ class TestDoiExtraction(unittest.TestCase):
         # (but trailing '.')
         self.assertEqual(self._getDoiID('MGI_6286560.pdf'),
                                                 '10.1128/JVI.01806-18')
-    #@unittest.expectedFailure       # uncomment decorator when we get to 3.7
+    @unittest.expectedFailure
     def test_ASM_break1(self):       # Amer Soc for Microbiology
         # J Virol: line break in 1st doi: '10.1128/JVI\n.01173-18.'
         # (but trailing '.')
