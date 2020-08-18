@@ -30,7 +30,8 @@ def getPdfpath(parentpath, mgiID):
 
     try:
         prefix, numeric = mgiID.split(':')
-        basepath = (int(numeric) / PROJECT_DIR_GROUPING) * PROJECT_DIR_GROUPING
+        numeric = int(numeric)
+        basepath = int(numeric / PROJECT_DIR_GROUPING) * PROJECT_DIR_GROUPING
         return os.path.join( str(parentpath), str(basepath) )
     except:
         raise Exception('Failed to obtain pdf path: %s, %s' % (parentpath, mgiID))
