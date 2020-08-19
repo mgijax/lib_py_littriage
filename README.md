@@ -14,26 +14,27 @@ After the module has been initialized, you may...
 
 ## ExtractedTextSet.py
 This module provides utilities for recovering the extracted text for 
-references (bib\_refs records) in the database.
+references (`bib_refs` records) in the database.
 
-Extracted text is stored in the bib\_workflow\_data table in the database,
+Extracted text is stored in the `bib_workflow_data` table in the database,
 but it is stored split into sections (body, references, supplemental, ...),
 and it is not so easy to recover the full text concatenated back together.
 
 The ExtractedTextSet class defined here does this for you.
 
 Convenience functions for building an ExtractedTextSet for a set of
-\_refs\_keys are also provided.
+`_refs_keys` are also provided.
 
-If run as a script, this module takes a \_ref\_key as a cmd line argument
+If run as a script, this module takes a `_ref_key` as a cmd line argument
 and writes the (full) extracted text for the reference to stdout.
-See ExtractedTextSet.py -h
+See `ExtractedTextSet.py -h`
 
 ## extractedTextSplitter.py
 Module for splitting the extracted text of articles into sections.
 TR 12763
 
 The sections we split into (in relative order):
+
     body                - everything up to the next section
     references          - the reference section
     manuscript figures  - some manuscript PDFs have figures/tables after
