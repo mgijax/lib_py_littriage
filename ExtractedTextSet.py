@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 """
 Name:  ExtractedTextSet.py
 Purpose:
@@ -13,7 +13,12 @@ Purpose:
 
     Convenience functions for building an ExtractedTextSet for a set of
     _refs_keys are also provided.
+
+    If run as a script, take _ref_key as a command line argument and write
+    the (full) extracted text for the reference to stdout.
+    See ExtractedTextSet.py -h
 """
+import argparse
 
 def getExtractedTextSet(db,             # an initialized db module
                         refKeyList,     # list of _ref_keys
@@ -36,11 +41,11 @@ def getExtractedTextSet(db,             # an initialized db module
             ...
     """
     query = '''
-    select bd._refs_key, t.term "text_type", bd.extractedtext "text_part"
-    from bib_workflow_data bd join voc_term t on
-                        (bd._extractedtext_key = t._term_key)
-    where bd._refs_key in ( %s )
-    ''' % ','.join([ str(r) for r in refKeyList ])
+        select bd._refs_key, t.term "text_type", bd.extractedtext "text_part"
+        from bib_workflow_data bd join voc_term t on
+                            (bd._extractedtext_key = t._term_key)
+        where bd._refs_key in ( %s )
+        ''' % ','.join([ str(r) for r in refKeyList ])
     results = db.sql([query], 'auto')
     ets = ExtractedTextSet(results[-1])
     return ets
@@ -56,10 +61,10 @@ def getExtractedTextSetForTable(db,             # an initialized db module
     (ideally, it should have an index on this field too for efficiency)
     """
     query = '''
-    select r._refs_key, t.term "text_type", bd.extractedtext "text_part"
-    from %s r join bib_workflow_data bd on (r._refs_key = bd._refs_key)
-        join voc_term t on (bd._extractedtext_key = t._term_key)
-    ''' % tmpTableName
+        select r._refs_key, t.term "text_type", bd.extractedtext "text_part"
+        from %s r join bib_workflow_data bd on (r._refs_key = bd._refs_key)
+            join voc_term t on (bd._extractedtext_key = t._term_key)
+        ''' % tmpTableName
     results = db.sql([query], 'auto')
     ets = ExtractedTextSet(results[-1])
     return ets
@@ -172,3 +177,47 @@ class ExtractedTextSet (object):
     #-----------------------------------
 # end class ExtractedTextSet -----------------------------------
 
+
+#-----------------------------------
+# if run as a script, write extracted text for a reference to stdout
+#-----------------------------------
+
+def getArgs():
+    parser = argparse.ArgumentParser( \
+        description='get extracted text for a reference and write it to stdout')
+
+    parser.add_argument('ref_key', default=None,
+        help="reference key to get extracted text for")
+
+    parser.add_argument('-s', '--server', dest='server', action='store',
+        required=False, default='dev',
+        help='db server: adhoc, prod, or dev (default)')
+
+    args =  parser.parse_args()
+
+    if args.server == 'adhoc':
+        args.host = 'mgi-adhoc.jax.org'
+        args.db = 'mgd'
+    if args.server == 'prod':
+        args.host = 'bhmgidb01'
+        args.db = 'prod'
+    if args.server == 'dev':
+        args.host = 'bhmgidevdb01'
+        args.db = 'prod'
+
+    return args
+#-----------------------------------
+
+if __name__ == "__main__":
+    import sys
+    import db as dbModule
+
+    args = getArgs()
+    dbModule.set_sqlServer(args.host)
+    dbModule.set_sqlDatabase(args.db)
+    dbModule.set_sqlUser("mgd_public")
+    dbModule.set_sqlPassword("mgdpub")
+
+    ets = getExtractedTextSet(dbModule, [args.ref_key])
+    text = ets.getExtText(args.ref_key)
+    print(text)

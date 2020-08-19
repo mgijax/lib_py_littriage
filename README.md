@@ -2,7 +2,6 @@
 Contains libraries necessary for literature triage, supporting relevant data loads and curatorial interfaces.
 
 ## PdfParser.py
-
 This module provides the PdfParser class, which wraps up the logic for parsing text out of a PDF file and providing easy access to it.
 
 The module must be initialized by calling setLitParserDir() with the path to the litparser (https://github.com/mgijax/litparser) product installation.
@@ -13,8 +12,40 @@ After the module has been initialized, you may...
 * ask the PdfParser to return the DOI ID in the file (getFirstDoiID)
 * ask the PdfParser for the full text from the file (getText)
 
-## Testing
+## ExtractedTextSet.py
+This module provides utilities for recovering the extracted text for 
+references (bib\_refs records) in the database.
 
+Extracted text is stored in the bib\_workflow\_data table in the database,
+but it is stored split into sections (body, references, supplemental, ...),
+and it is not so easy to recover the full text concatenated back together.
+
+The ExtractedTextSet class defined here does this for you.
+
+Convenience functions for building an ExtractedTextSet for a set of
+\_refs\_keys are also provided.
+
+If run as a script, this module takes a \_ref\_key as a cmd line argument
+and writes the (full) extracted text for the reference to stdout.
+See ExtractedTextSet.py -h
+
+## extractedTextSplitter.py
+Module for splitting the extracted text of articles into sections.
+TR 12763
+
+The sections we split into (in relative order):
+    body                - everything up to the next section
+    references          - the reference section
+    manuscript figures  - some manuscript PDFs have figures/tables after
+                           the refs
+                          (WE USE THE TERM "figure" to mean "figure/table" )
+    star*methods        - some papers have an extended "methods" section
+                           after the refs. This section is called "Star*Methods"
+    supplemental data   - indicated by a special MGI text tag inserted by
+                           Nancy or someone in MGI when the supp data is added
+                           to the PDF
+
+## Testing
 See test/ subdirectory.
 
 When running these scripts, be aware of your PYTHONPATH and LITPARSER settings.
@@ -22,7 +53,6 @@ You may be exercising python modules in /usr/local/mgi/live instead of your
 dev directories (which may be what you want).
 
 ### PdfParser.py DOI ID extraction
-
 `test_doiExtraction.py -v` runs automated tests using the python unittest
 framework.
 
@@ -52,7 +82,6 @@ See `findDoiExamples.py -h` for various options
 (e.g., look by publication year).
 
 ### doiRetry.py
-
 `doiRetry.py` re-extracts DOI IDs for papers already in the db and compares
 those IDs with the DOI ID for each paper in the accession table.
 
