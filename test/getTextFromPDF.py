@@ -50,7 +50,7 @@ if MGIID_RE.match(args.pdf):
     dir = Pdfpath.getPdfpath(PDFDIRS, mgiID)      # get PDF storage path
     pdfFile = os.path.join(dir, numeric + '.pdf')
     if args.justPath:
-        sys.stdout.write(pdfFile)
+        print(pdfFile)
         exit(0)
 else:
     pdfFile = args.pdf
@@ -58,4 +58,9 @@ else:
 # get text from the pdf
 parser = PdfParser.PdfParser(os.path.abspath(pdfFile))
 textFromPdf = parser.getText()
+err = parser.getStderr()
+if err:
+    sys.stderr.write("Stderr from %s:\n" % LITPARSER)
+    sys.stderr.write(err)
+
 sys.stdout.write(textFromPdf)

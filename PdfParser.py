@@ -362,9 +362,10 @@ class PdfParser:
                 except: # error in attempting to execute parsing script
                         raise Exception('Failed to execute: %s' % cmdText)
 
+                self.stderr = completedProcess.stderr
+
                 # parsing script finished with an error code?
                 if (completedProcess.returncode != 0):
-                        self.stderr = completedProcess.stderr
                         msg = 'Failed to parse %s\n' % self.pdfPath
                         msg += 'Stderr from %s:\n%s\n' % (cmdText, self.stderr)
                         raise Exception(msg)
