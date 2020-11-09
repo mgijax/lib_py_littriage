@@ -44,8 +44,7 @@ REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fc
 
 # Governer is needed to ensure we don't issue too many requests of eutils and start getting 429 errors.
 # Eutils allows 3 per second, so max out at 2 just to be conservative.
-gov = HttpRequestGovernor.HttpRequestGovernor(secPerRequst = 0.5,
-        requestsPerMinute = 120, requestsPerHour = 7200, requestsPerDay = 172800)
+gov = HttpRequestGovernor.HttpRequestGovernor(0.5, 120, 7200, 172800)
 
 ###--- Functions ---###
 
