@@ -8,10 +8,10 @@
 # 3. start passing DOI IDs (singly or in a list) to the agent and getting
 #	back data in your desired format using getReference(doiID) or getReferences(doiList)
 
-import urllib.request, urllib.parse, urllib.error
 import csv
 import xml.dom.minidom 
 import os
+import HttpRequestGovernor
 
 ###--- Globals ---###
 
@@ -35,14 +35,17 @@ EUTILS_API_KEY =  os.environ['EUTILS_API_KEY']
 
 # URL for sending DOI IDs to PubMed to be converted to PubMed IDs;
 # need to fill in tool name, email address, and comma-delimited list of DOI IDs
-#ID_CONVERTER_URL = '''https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?tool=%s&email=%s&format=csv&ids=%s'''
 ID_CONVERTER_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=%s&term=%s[lid]&api_key=''' + EUTILS_API_KEY
 
 # URL for sending PubMed IDs to PubMed to get reference data for them;
 # need to fill in comma-delimited list of PubMed IDs, requested return mode,
 # tool name, and email address
-#REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=%s&retmode=%s&tool=%s&email=%s'''
 REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=%s&retmode=%s&rettype=%s&api_key=''' + EUTILS_API_KEY
+
+# Governer is needed to ensure we don't issue too many requests of eutils and start getting 429 errors.
+# Eutils allows 3 per second, so max out at 2 just to be conservative.
+gov = HttpRequestGovernor.HttpRequestGovernor(secPerRequst = 0.5,
+        requestsPerMinute = 120, requestsPerHour = 7200, requestsPerDay = 172800)
 
 ###--- Functions ---###
 
@@ -184,22 +187,15 @@ class PubMedAgent:
                     forUrl = doiID.replace(')', '*')
                     forUrl = doiID.replace(';', '*')
                     forUrl = doiID.replace(':', '*')
-                    response = urllib.request.urlopen(ID_CONVERTER_URL % (XML, forUrl))
-                    record = response.read().decode('utf-8')
+                    record = gov.get(ID_CONVERTER_URL % (XML, forUrl))
                     xmldoc = xml.dom.minidom.parseString(record)
                     pubmedIDs = xmldoc.getElementsByTagName("Id")
-                    #print('*****\n\n')
-                    #print(ID_CONVERTER_URL % (XML, doiID))
-                    #print(record)
-                    #print('pubmedIDs : ', str(pubmedIDs))
-                    #print('doiID : ', doiID)
                     if doiID not in mapping:
                         mapping[doiID] = []
                     if pubmedIDs == []:
                         mapping[doiID].append(None)
                     else:
                         for pmID in pubmedIDs:
-                            #print 'pm: %s' % pmID.firstChild.data
                             mapping[doiID].append(pmID.firstChild.data)
             except IOError as e:
                 if hasattr(e, 'code'): # HTTPError
@@ -287,10 +283,7 @@ class PubMedAgentMedline (PubMedAgent):
         # Init the reference we will return
         pubMedRef = None
         try:
-            #print(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
-            response = urllib.request.urlopen(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
-            medLineRecord = response.read().decode('utf-8')
-            #print('"%s"' % medLineRecord)
+            medLineRecord = gov.get(REFERENCE_FETCH_URL % (pubMedID, TEXT, MEDLINE))
         except IOError as e:
             if hasattr(e, 'code'): # HTTPError
                 print('http error code: ', e.code)
