@@ -186,7 +186,8 @@ class PubMedAgent:
                     forUrl = doiID.replace(')', '*')
                     forUrl = doiID.replace(';', '*')
                     forUrl = doiID.replace(':', '*')
-                    record = gov.get(ID_CONVERTER_URL % (XML, forUrl))
+                    idUrl = ID_CONVERTER_URL % (XML, forUrl)
+                    record = gov.get(idUrl.replace('[', '%5B').replace(']', '%5D'))
                     xmldoc = xml.dom.minidom.parseString(record)
                     pubmedIDs = xmldoc.getElementsByTagName("Id")
                     if doiID not in mapping:
