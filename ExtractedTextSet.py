@@ -170,7 +170,7 @@ class ExtractedTextSet (object):
             if refKey not in resultDict:
                 resultDict[refKey] = {}
 
-            resultDict[refKey][textType] = textPart
+            resultDict[refKey][textType] = str(textPart)
 
         self.key2TextParts = resultDict
         return self.key2TextParts
