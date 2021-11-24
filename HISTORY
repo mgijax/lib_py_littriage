@@ -1,8 +1,10 @@
+TAG: lib_py_littriage-6-0-16-8
 TAG: lib_py_littriage-6-0-16-7
-DATE: 11/23/2021
-STAFF: jak
+DATE: 11/23/2021, 11/24/2021
+STAFF: jak, lec
 handle null extracted text in ExtractedTextSet.py
 YAKS-380
+chmod +x ExtractedTextSet.py PdfParser.py
 
 TAG: lib_py_littriage-6-0-16-3
 DATE: 08/24/2020
