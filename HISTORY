@@ -1,3 +1,9 @@
+TAG: lib_py_littriage-6-0-18-1
+DATE: 02/09/2022
+STAFF: lec
+wts2-599/PNAS journal no longer has page numbers in PubMed/PG tag
+added 'eLocator' to PubMedAgent.py
+
 TAG: lib_py_littriage-6-0-16-8
 TAG: lib_py_littriage-6-0-16-7
 DATE: 11/23/2021, 11/24/2021

@@ -11,6 +11,7 @@
 import csv
 import xml.dom.minidom 
 import os
+import re
 import HttpRequestGovernor
 
 ###--- Globals ---###
@@ -35,7 +36,8 @@ EUTILS_API_KEY =  os.environ['EUTILS_API_KEY']
 
 # URL for sending DOI IDs to PubMed to be converted to PubMed IDs;
 # need to fill in tool name, email address, and comma-delimited list of DOI IDs
-ID_CONVERTER_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=%s&term=%s[lid]&api_key=''' + EUTILS_API_KEY
+PUBMEDID_CONVERTER_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=%s&term=%s[lid]&api_key=''' + EUTILS_API_KEY
+PMCID_CONVERTER_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&retmode=%s&term=%s[lid]&api_key=''' + EUTILS_API_KEY
 
 # URL for sending PubMed IDs to PubMed to get reference data for them;
 # need to fill in comma-delimited list of PubMed IDs, requested return mode,
@@ -45,6 +47,9 @@ REFERENCE_FETCH_URL = '''https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fc
 # Governer is needed to ensure we don't issue too many requests of eutils and start getting 429 errors.
 # Eutils allows 3 per second, so max out at 2 just to be conservative.
 gov = HttpRequestGovernor.HttpRequestGovernor(0.5, 120, 7200, 172800)
+
+# LID/ELOCATORE search
+ELOCATOR_RE = re.compile('(E[0-9]+)')
 
 ###--- Functions ---###
 
@@ -87,6 +92,7 @@ class PubMedReference:
         self.volume = None
         self.primaryAuthor = None
         self.publicationType = None
+        self.elocator = None
         # add other fields as needed
 
         self.errorMessage = errorMessage
@@ -152,6 +158,10 @@ class PubMedReference:
         self.publicationType = publicationType
     def getPublicationType(self):
         return self.publicationType
+    def setElocator(self, elocator):
+        self.elocator = elocator
+    def getElocator(self):
+        return self.elocator
     # add other accessors as needed
 
 class PubMedAgent:
@@ -186,7 +196,7 @@ class PubMedAgent:
                     forUrl = doiID.replace(')', '*')
                     forUrl = doiID.replace(';', '*')
                     forUrl = doiID.replace(':', '*')
-                    idUrl = ID_CONVERTER_URL % (XML, forUrl)
+                    idUrl = PUBMEDID_CONVERTER_URL % (XML, forUrl)
                     record = gov.get(idUrl.replace('[', '%5B').replace(']', '%5D'))
                     xmldoc = xml.dom.minidom.parseString(record)
                     pubmedIDs = xmldoc.getElementsByTagName("Id")
@@ -379,6 +389,36 @@ class PubMedAgentMedline (PubMedAgent):
 
                 elif line.startswith('AID') and (line.find('[doi]') > 0):
                     pubMedRef.setDoiID(str.strip(line.split('AID -')[1].split('[')[0]))
+
+                # find page numbers being stored in LID/[pii] (publisher item identifier)
+                # this is known as the 'elocator' : XXXX can be anything;alphanumeric; case insensitive
+                #       eXXX
+                #       bioXXX
+                #       devXXX
+                #       dmmXXX
+                #       jcsXXX
+                #
+                #       if E[0-9]xxx, then remove the E
+                #
+                elif line.startswith('LID') and (value.find('[pii]') > 0) and  \
+                        (
+                                value.lower().startswith('e')
+                                or value.lower().startswith('bio')
+                                or value.lower().startswith('dev')
+                                or value.lower().startswith('dmm')
+                                or value.lower().startswith('jcs')
+                        ):
+
+                    value = str.strip(line.split('LID -')[1].split('[')[0])
+
+                    match = ELOCATOR_RE.search(value)
+                    if match:
+                        value = value.replace('E', '')
+
+                    pubMedRef.setElocator(value)
+
+                    # for testing
+                    #pubMedRef.setElocator(line)
 
                 elif line.startswith('PT'):
 
