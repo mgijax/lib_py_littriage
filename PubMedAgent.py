@@ -341,6 +341,7 @@ class PubMedAgentMedline (PubMedAgent):
                 if isAB == 1:
                     if line.startswith('      '):
                         abList.append(str.strip(line))
+                        #print(line)
                         continue
                     else:
                         isAB = 0
@@ -436,7 +437,17 @@ class PubMedAgentMedline (PubMedAgent):
                         else:
                             pubMedRef.setPublicationType(value)
 
-            pubMedRef.setAbstract(' '.join(abList))
+            #
+            # remove non-ascii characters
+            #
+            abstract = ' '.join(abList)
+            newAbstract = ''
+            for c in abstract:
+                if ord(c) < 128:
+                    newAbstract += c
+            pubMedRef.setAbstract(newAbstract)
+
+            #pubMedRef.setAbstract(' '.join(abList))
             pubMedRef.setAuthors('; '.join(auList))
             pubMedRef.setTitle(' '.join(tiList))
 
