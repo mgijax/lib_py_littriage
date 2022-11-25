@@ -447,7 +447,6 @@ class PubMedAgentMedline (PubMedAgent):
                     newAbstract += c
             pubMedRef.setAbstract(newAbstract)
 
-            #pubMedRef.setAbstract(' '.join(abList))
             pubMedRef.setAuthors('; '.join(auList))
             pubMedRef.setTitle(' '.join(tiList))
 
