@@ -447,7 +447,18 @@ class PubMedAgentMedline (PubMedAgent):
                     newAbstract += c
             pubMedRef.setAbstract(newAbstract)
 
-            pubMedRef.setAuthors('; '.join(auList))
-            pubMedRef.setTitle(' '.join(tiList))
+            authors = '; '.join(auList)
+            newAuthors = ''
+            for c in authors:
+                if ord(c) < 128:
+                    newAuthors += c
+            pubMedRef.setAuthors(newAuthors)
+
+            title = ' '.join(tiList)
+            newTitle = ''
+            for c in title:
+                if ord(c) < 128:
+                    newTitle += c
+            pubMedRef.setTitle(newTitle)
 
         return pubMedRef
