@@ -363,8 +363,6 @@ class PubMedAgentMedline (PubMedAgent):
 
                 # skip 'AUID-'
                 elif line.startswith('AU  -'):
-                    if auList == []:
-                        pubMedRef.setPrimaryAuthor(value)
                     auList.append(value)
 
                 elif line.startswith('TA'):
@@ -453,6 +451,12 @@ class PubMedAgentMedline (PubMedAgent):
                 if ord(c) < 128:
                     newAuthors += c
             pubMedRef.setAuthors(newAuthors)
+
+            newPrimaryAuthor = ''
+            for c in auList[0]:
+                if ord(c) < 128:
+                    newPrimaryAuthor += c
+            pubMedRef.setPrimaryAuthor(newPrimaryAuthor)
 
             title = ' '.join(tiList)
             newTitle = ''
