@@ -453,9 +453,10 @@ class PubMedAgentMedline (PubMedAgent):
             pubMedRef.setAuthors(newAuthors)
 
             newPrimaryAuthor = ''
-            for c in auList[0]:
-                if ord(c) < 128:
-                    newPrimaryAuthor += c
+            if len(auList) > 0:
+                for c in auList[0]:
+                    if ord(c) < 128:
+                        newPrimaryAuthor += c
             pubMedRef.setPrimaryAuthor(newPrimaryAuthor)
 
             title = ' '.join(tiList)

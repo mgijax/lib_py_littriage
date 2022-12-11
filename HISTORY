@@ -1,3 +1,4 @@
+TAG: lib_py_littriage-6-0-22-7
 TAG: lib_py_littriage-6-0-22-6
 TAG: lib_py_littriage-6-0-22-5
 TAG: lib_py_littriage-6-0-22-4
@@ -7,6 +8,7 @@ TAG: lib_py_littriage-6-0-22-1
 DATE: 11/25/2022, 11/29/2022, 12/09/2022
 STAFF: lec
 wts2-550/TR13423 - ltlo: NLM-refresh not updating abstract
+non-ascii/authors, title, abstract
 
 TAG: lib_py_littriage-6-0-18-1
 DATE: 02/09/2022
