@@ -443,6 +443,7 @@ class PubMedAgentMedline (PubMedAgent):
             for c in abstract:
                 if ord(c) < 128:
                     newAbstract += c
+            newAbstract = newAbstract.replace('\\','')
             pubMedRef.setAbstract(newAbstract)
 
             authors = '; '.join(auList)
