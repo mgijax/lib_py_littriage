@@ -465,6 +465,10 @@ class PubMedAgentMedline (PubMedAgent):
             for c in title:
                 if ord(c) < 128:
                     newTitle += c
+            newTitle = newTitle.replace("(double dagger)", "")
+            newTitle = newTitle.replace("double dagger", "")
+            newTitle = newTitle.replace("(dagger).", ".")
+            newTitle = newTitle.replace("dagger.", ".")
             pubMedRef.setTitle(newTitle)
 
         return pubMedRef
