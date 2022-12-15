@@ -469,6 +469,7 @@ class PubMedAgentMedline (PubMedAgent):
             newTitle = newTitle.replace("double dagger", "")
             newTitle = newTitle.replace("(dagger).", ".")
             newTitle = newTitle.replace("dagger.", ".")
+            newTitle = newTitle.replace("dagger..", ".")
             pubMedRef.setTitle(newTitle)
 
         return pubMedRef
