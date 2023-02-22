@@ -188,9 +188,9 @@ class PubMedAgent:
             #     then that one maps to None.
             # Throws: Exception if the URL returns an error
             mapping = {}  # {doiid: [pubMedId(s)], ...}
-            try:
-                #print '### Getting PubMed IDs ###\n'
-                for doiID in doiList:
+            for doiID in doiList:
+                try:
+                    #print('### Getting PubMed IDs for (%s) ###\n' % (doiID))
                     forUrl = doiID
                     forUrl = doiID.replace('(', '*')
                     forUrl = doiID.replace(')', '*')
@@ -207,15 +207,15 @@ class PubMedAgent:
                     else:
                         for pmID in pubmedIDs:
                             mapping[doiID].append(pmID.firstChild.data)
-            except IOError as e:
-                if hasattr(e, 'code'): # HTTPError
-                    print('HTTP error code: ', e.code)
-                    raise Exception('HTTP error code: %s' % e.code)
-                elif hasattr(e, 'reason'): # URLError
-                    print("Can't connect, reason: ", e.reason)
-                    raise Exception("Can't connect, reason: %s" % e.reason)
-                else:
-                        raise Exception('Unknown exception: %s' % e)
+                except IOError as e:
+                        if hasattr(e, 'code'): # HTTPError
+                                print('HTTP error code: ', e.code)
+                                raise Exception('HTTP error code: %s' % e.code)
+                        elif hasattr(e, 'reason'): # URLError
+                                print("Can't connect, reason: ", e.reason)
+                                raise Exception("Can't connect, reason: %s" % e.reason)
+                        else:
+                                raise Exception('Unknown exception: %s' % e)
 
             return mapping
 
