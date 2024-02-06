@@ -1,6 +1,3 @@
-#!/usr/bin/env python2.4
-#!/usr/bin/env python
-
 """
 ###################
 Module for splitting the extracted text of articles into sections.
