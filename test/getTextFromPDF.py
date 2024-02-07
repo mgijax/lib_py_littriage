@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Name: getTextFromPdf.py
 # Purpose: Extract the text from a PDF and write it to stdout.
 #          Knows how to get text from a PDF in our pdf storage (by MGI ID).

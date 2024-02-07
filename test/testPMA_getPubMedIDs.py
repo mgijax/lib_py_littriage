@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import PubMedAgent
 import urllib.request, urllib.parse, urllib.error
 

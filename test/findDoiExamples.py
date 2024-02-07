@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 #
 #  Purpose: Find example references for different flavors of DOI handling
 #             so we can build a set of test cases.
