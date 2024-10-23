@@ -81,6 +81,7 @@ class PubMedReference:
     def __init__ (self, errorMessage = None):
         self.pubMedID = None
         self.doiID = None
+        self.pmcID = None
         self.title = None
         self.authors = None
         self.journal = None
@@ -114,6 +115,10 @@ class PubMedReference:
         self.doiID = doiID
     def getDoiID(self):
         return self.doiID
+    def setPmcID(self, pmcID):
+        self.pmcID = pmcID
+    def getPmcID(self):
+        return self.pmcID
     def setTitle(self, title):
         self.title = title
     def getTitle(self):
@@ -356,6 +361,9 @@ class PubMedAgentMedline (PubMedAgent):
                 # tags of interest
                 if line.startswith('PMID'):
                     pubMedRef.setPubMedID(value) 
+
+                elif line.startswith('PMC '):
+                    pubMedRef.setPmcID(value) 
 
                 elif line.startswith('TI'):
                     isTI = 1
