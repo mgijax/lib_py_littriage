@@ -1,3 +1,11 @@
+TAG: lib_py_littriage-6-0-25-1
+DATE: 12/23/2024
+STAFF: lec
+wts2-1594/e4g-106/DoiFinder/j.isci issue
+#       modified:   PdfParser.py
+while testing Lit Triage, found a j.isci issue; added this:
+class DoiFinder: text = text.replace(' j.isci', 'j.isci')
+
 TAG: lib_py_littriage-6-0-24-2
 TAG: lib_py_littriage-6-0-24-1
 DATE: 10/23/2024

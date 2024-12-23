@@ -62,6 +62,7 @@ class DoiFinder (object):
 
         # Everything except pnas
         text = text.replace(' journal.pone', 'journal.pone')
+        text = text.replace(' j.isci', 'j.isci')
         match = self.DOI_RE.search(text)
 
         if not match:           # no apparent DOI
