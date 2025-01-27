@@ -23,7 +23,7 @@ def getArgs():
 
     parser.add_argument('-s', '--server', dest='server', action='store',
         required=False, default='dev',
-        help='db server: adhoc, prod, or dev (default)')
+        help='db server: prod, or dev (default)')
 
     parser.add_argument('-o', '--output', dest='outputDir', action='store',
         required=False, default='.',
@@ -34,9 +34,6 @@ def getArgs():
 
     args =  parser.parse_args()
 
-    if args.server == 'adhoc':
-	args.host = 'mgi-adhoc.jax.org'
-	args.db = 'mgd'
     if args.server == 'prod':
 	args.host = 'bhmgidb01'
 	args.db = 'prod'

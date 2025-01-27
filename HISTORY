@@ -1,3 +1,13 @@
+TAG: lib_py_littriage-6-0-25-2
+DATE: 01/27/2025
+STAFF: lec
+wts2-1605/e4g-124/Retire AdHoc Server : remove local dependencies
+#        modified:   ExtractedTextSet.py
+#        modified:   HISTORY
+#        modified:   extractedTextTest/bulkGetExtText.py
+#        modified:   test/doiRetry.py
+#        modified:   test/findDoiExamples.py
+
 TAG: lib_py_littriage-6-0-25-1
 DATE: 12/23/2024
 STAFF: lec
